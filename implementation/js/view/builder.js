@@ -22,50 +22,131 @@
 			  'flex-flow': 'row wrap',
 			  'justify-content': 'space-between',
 			});
-			this.show('middle-box', new Box());//, options);
+			this.show('middle-box', Box, {
+				data: {
+					boxes: _.filter(this.get('boxes'), function(box){ return box.boxName === 'middle_box'; })
+				}
+			});//options?
+			this.show('top-left-box', Box, {
+				data: {
+					boxes: _.filter(this.get('boxes'), function(box){ return box.boxName === 'top_left_box'; })
+				}
+			});
+			this.show('top-right-box', Box, {
+				data: {
+					boxes: _.filter(this.get('boxes'), function(box){ return box.boxName === 'top_right_box'; })
+				}
+			});
+			this.show('bottom-right-box', Box, {
+				data: {
+					boxes: _.filter(this.get('boxes'), function(box){ return box.boxName === 'bottom_right_box'; })
+				}
+			});
 		}
 	});
 
 	var Box = app.view({
 		name: 'box',
 		template: [
-			'<div class="wrapper-full">',
-				'<div style="color:#626262;">Boxes</div>',
+			//'{{#each boxes}}',
 				'<div region="group"></div>',
-			'</div>',
+			//ß'{{/each}}',
 		],
-		useParentData: 'boxes',
+		//useParentData: 'boxes',
 		onReady: function() {
-			console.log(this.get('boxes'));
+			console.log(this.get());
+			//var temp = this.get('boxes').slice();
+			//temp = _.filter(temp, function(box){ return box.boxName === 'middle_box'; });
 			this.more('group', this.get('boxes'), Group, true);
 		}
 	});
 
 	var Group = app.view('Group', {
 		template: [
-			'<div region="info"></div>',
+			'<div region="content"></div>',
 			'<div region="add"></div>',
 		],
 		useParentData: 'boxes',
 		onReady: function() {
-			this.show('info', Info, {
-				data: this.get()
-			});
+			if (this.get('containerTemplate')) {
+				var theTemplateScript = this.get('containerTemplate'),
+					inputData = this.get('containerData'),
+			  	jsonData = (inputData === "") ? "" : JSON.parse(inputData),
+			  	preCompiledTemplateScript;
+				if (Array.isArray(jsonData)) {
+					preCompiledTemplateScript = '{{#each .}}' + theTemplateScript + '{{/each}}';
+				} else {
+					preCompiledTemplateScript = theTemplateScript;
+				}
+				var theTemplate = Handlebars.compile(preCompiledTemplateScript),
+					theCompiledHTML = theTemplate(jsonData),
+					d = {id: theCompiledHTML};
+				this.show('content', Content, {
+					data: d
+				});
+			}
 			this.show('add', AddButton);
-		},
+		}
+	});
+
+	var Content = app.view({
+		template: [
+			'<div action-click="edit-element">{{{id}}}</div>'
+		],
 		actions: {
-			'add-element': function(){
+			'edit-element': function($btn){
+				 app.notify('Action triggered!', 'Click Edit!', 'danger');
+				 (new PopOver({
+					 data: {t: 'ttt'}
+				 })).popover($btn, {placement: 'top', bond: this});
+			}
+		},
+		onReady: function() {
+
+		}
+	});
+
+	var AddButton = app.view({
+		template: [
+			'<div class="add-button" action-click="add-element" data-placement="bottom">Add</div>'
+		],
+		actions: {
+			'add-element': function($btn){
 				 app.notify('Action triggered!', 'Click action!', 'success');
+				 (new PopOver()).popover($btn, {placement: 'top', bond: this});
 			}
 		}
 	});
 
-	var Info = app.view({
-			template: '<div>{{id}}</div><div>{{name}}</div>',
-	});
-
-	var AddButton = app.view({
-		template: '<div class="add-element" action-click="add-element" data-placement="bottom">Add</div>'
+	var PopOver = app.view({
+		template: [
+			'<div class="row form-horizontal">',
+				'<div class="col-md-12">',
+					'<div editor="html"></div>',
+					'<div editor="data"></div>',
+				'</div>',
+			'</div>',
+		],
+		editors: {
+			html: {
+				label: 'HTML',
+				type: 'text',
+				value: '{{{t}}}',
+				layout: {
+					label: 'col-md-3',
+					field: 'col-md-9'
+				}
+			},
+			data: {
+				label: 'Data',
+				type: 'text',
+				value: 'ENTER DATA!',
+				layout: {
+					label: 'col-md-3',
+					field: 'col-md-9'
+				}
+			}
+		}
 	});
 
 })(Application);
