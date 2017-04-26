@@ -24,22 +24,22 @@
 			});
 			this.show('middle-box', Box, {
 				data: {
-					boxes: _.filter(this.get('boxes'), function(box){ return box.boxName === 'middle_box'; })
+					boxes: _.filter(this.get('boxes'), function(box){ return box.boxName === 'middle-box'; })
 				}
-			});//options?
+			});
 			this.show('top-left-box', Box, {
 				data: {
-					boxes: _.filter(this.get('boxes'), function(box){ return box.boxName === 'top_left_box'; })
+					boxes: _.filter(this.get('boxes'), function(box){ return box.boxName === 'top-left-box'; })
 				}
 			});
 			this.show('top-right-box', Box, {
 				data: {
-					boxes: _.filter(this.get('boxes'), function(box){ return box.boxName === 'top_right_box'; })
+					boxes: _.filter(this.get('boxes'), function(box){ return box.boxName === 'top-right-box'; })
 				}
 			});
 			this.show('bottom-right-box', Box, {
 				data: {
-					boxes: _.filter(this.get('boxes'), function(box){ return box.boxName === 'bottom_right_box'; })
+					boxes: _.filter(this.get('boxes'), function(box){ return box.boxName === 'bottom-right-box'; })
 				}
 			});
 		}
@@ -48,15 +48,11 @@
 	var Box = app.view({
 		name: 'box',
 		template: [
-			//'{{#each boxes}}',
-				'<div region="group"></div>',
-			//ß'{{/each}}',
+			'<div region="first-add"></div>',
+			'<div region="group"></div>',
 		],
-		//useParentData: 'boxes',
 		onReady: function() {
-			console.log(this.get());
-			//var temp = this.get('boxes').slice();
-			//temp = _.filter(temp, function(box){ return box.boxName === 'middle_box'; });
+			this.show('first-add', AddButton);
 			this.more('group', this.get('boxes'), Group, true);
 		}
 	});
