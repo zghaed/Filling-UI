@@ -1,17 +1,27 @@
 [region='top-left-box'] {
-  padding: 1em;
-  flex: 0 1 100%;
-  display: flex;
   border-width: 2px;
   border-color: lightgrey;
   border-style: dashed;
+  border-bottom-style: none;
+}
+.region-top-left-box .region-group > * {
+  padding: 1em;
+  display: flex;
   flex: 0 1 auto;
   flex-flow: row nowrap;
   order: 1;
   justify-content: flex-start;
   align-items: flex-start;
   align-content: flex-start;
-  border-bottom-style: none;
+}
+
+.region-top-left-box .region-group > * .regional-group {
+  display: flex;
+  flex: 0 1 auto;
+  flex-flow: row nowrap;
+  justify-content: flex-start;
+  align-items: flex-start;
+  align-content: flex-start;
 }
 
 [region='top-right-box'] {
@@ -32,7 +42,6 @@
 
 [region='bottom-right-box'] {
   padding: 1em;
-  flex: 0 1 100%;
   display: flex;
   border-width: 2px;
   border-color: lightgrey;

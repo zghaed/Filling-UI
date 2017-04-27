@@ -48,11 +48,9 @@
 	var Box = app.view({
 		name: 'box',
 		template: [
-			'<div region="first-add"></div>',
 			'<div region="group"></div>',
 		],
 		onReady: function() {
-			this.show('first-add', AddButton);
 			this.more('group', this.get('boxes'), Group, true);
 		}
 	});

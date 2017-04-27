@@ -1,6 +1,9 @@
 {
 	"boxes":
-	[	{},
+	[	{"id":1,"boxName":"top-left-box"},
+		{"id":2,"boxName":"top-right-box"},
+		{"id":3,"boxName":"middle-box"},
+		{"id":4,"boxName":"bottom-right-box"},
 		{"id":39,"boxName":"top-left-box","containerTemplate":"<button type=\"button\" id=\"preview\" class=\"btn btn-default\">2</button>   ","containerData":"","isHorizontal":true,"groupNumber":3,"createdAt":"2017-04-24T17:44:21.767Z","updatedAt":"2017-04-24T17:44:21.767Z"},
 		{"id":38,"boxName":"top-left-box","containerTemplate":"<button type=\"button\" id=\"preview\" class=\"btn btn-default\">1</button>      ","containerData":"","isHorizontal":true,"groupNumber":1,"createdAt":"2017-04-24T17:44:09.081Z","updatedAt":"2017-04-24T17:44:58.591Z"},
 		{"id":25,"boxName":"top-right-box","containerTemplate":"<button type=\"button\" id=\"preview\" class=\"btn btn-{{btn}}\">{{btn}}</button> ","containerData":"[\n  {\"btn\": \"success\"},\n  {\"btn\": \"default\"},\n  {\"btn\": \"info\"}\n]","isHorizontal":true,"groupNumber":-1,"createdAt":"2017-04-21T19:02:36.351Z","updatedAt":"2017-04-21T21:26:49.669Z"},
