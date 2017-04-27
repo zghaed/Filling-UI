@@ -6,7 +6,17 @@
 			'<div class="area" region="middle-box"></div>',
 			'<div class="area" region="bottom-right-box"></div>',
 		],
-		data: 'boxes.json',
+		data: app.store.get('boxes') || 
+			app.store.set('boxes',
+			{"boxes":
+				[
+					{"boxName":"top-left-box", "groupNumber":"0"},
+		 			{"boxName":"top-right-box", "groupNumber":"0"},
+		  		{"boxName":"middle-box", "groupNumber":"0"},
+		 			{"boxName":"bottom-right-box", "groupNumber":"0"}
+				]
+			}
+		),
 		// onCertainEvents: function(payload){
 		// 	//
 		// 	//on boxes.json changed
@@ -55,9 +65,6 @@
 			direction: {
 				type: 'radios',
 				className: 'radio-success',
-				tooltip: {
-					title: 'Where is the tooltip?'
-				},
 				value: ['h'],
 				options: {
 					inline: true,
@@ -156,7 +163,7 @@
 		actions: {
 			'add-element': function($btn){
 				 app.notify('Action triggered!', 'Click action!', 'success');
-				 (new PopOver()).popover($btn, {placement: 'top', bond: this});
+				 (new PopOver()).popover($btn, {placement: 'top', bond: this, style: {width: '600px'}});
 			}
 		}
 	});
@@ -166,7 +173,7 @@
 			'<div class="col-md-12">',
 				'<div class="row">',
 					'<div class="form form-horizontal">',
-						'<div editor="html"></div>',
+						'<div editor="t"></div>',
 						'<div editor="data"></div>',
 					'</div>',
 				'</div>',
@@ -177,7 +184,7 @@
 			'</div>'
 		],
 		editors: {
-			html: {
+			t: {
 				label: 'HTML',
 				type: 'textarea',
 				value: 'HTML',
@@ -196,7 +203,6 @@
 		},
 		actions: {
 			submit: function() {
-				console.log('submit');
 				if (this.getEditor('html').validate())
 					app.notify('Error', this.getEditor('html').validate(), 'danger');
 				var inputHtml = this.getEditor('html').getVal(),
@@ -214,15 +220,15 @@
 
 
 				//get all objects
-				Application.remote({
-					url: 'boxes.json',
-					params: {
-						'groupNumber': 3,
-						'boxName': 'top-left-box'
-					}
-				}).done(function(json) {
-					console.log(json);
-				});
+				// Application.remote({
+				// 	url: 'boxes.json',
+				// 	params: {
+				// 		'groupNumber': 3,
+				// 		'boxName': 'top-left-box'
+				// 	}
+				// }).done(function(json) {
+				// 	console.log(json);
+				// });
 
 
 				//POST
@@ -241,7 +247,8 @@
 			},
 			cancel: function() {
 				console.log('cancel clicked');
-				this.popover('hide');
+				//this.popover('hide');
+				this.close();
 			}
 		},
 		onReady: function() {
