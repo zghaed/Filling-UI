@@ -48,8 +48,31 @@
 	var Box = app.view({
 		name: 'box',
 		template: [
+			'<div editor="direction" action="change-direction"></div>',
 			'<div region="group"></div>',
 		],
+		editors: {
+			direction: {
+				type: 'radios',
+				className: 'radio-success',
+				tooltip: {
+					title: 'Where is the tooltip?'
+				},
+				value: ['h'],
+				options: {
+					inline: true,
+					data: [
+						{label: 'H', value: 'h'},
+						{label: 'V', value: 'v'}
+					]
+				}
+			},
+		},
+		actions: {
+			'change-direction': function(){
+				 app.notify('Action triggered!', 'Direction changed!');
+			}
+		},
 		onReady: function() {
 			this.more('group', this.get('boxes'), Group, true);
 		}
@@ -79,6 +102,9 @@
 					data: d
 				});
 			}
+			this.$el.css({
+				'order': this.get('groupNumber'),
+			});
 			this.show('add', AddButton);
 		}
 	});
@@ -89,7 +115,7 @@
 		],
 		actions: {
 			'edit-element': function($btn){
-				 app.notify('Action triggered!', 'Click Edit!', 'danger');
+				 app.notify('Action triggered!', 'You are editing an element!', 'danger');
 				 (new PopOver({
 					 data: {t: 'ttt'}
 				 })).popover($btn, {placement: 'top', bond: this});
@@ -114,31 +140,48 @@
 
 	var PopOver = app.view({
 		template: [
-			'<div class="row form-horizontal">',
-				'<div class="col-md-12">',
-					'<div editor="html"></div>',
-					'<div editor="data"></div>',
+			'<div class="col-md-12">',
+				'<div class="row">',
+					'<div class="form form-horizontal">',
+						'<div editor="html"></div>',
+						'<div editor="data"></div>',
+					'</div>',
 				'</div>',
 			'</div>',
+			'<div class="row">',
+				'<span class="btn btn-primary" action-click="submit">Submit</span> ',
+				'<span class="btn btn-info btn-outline" action-click="cancel">Cancel</span> ',
+			'</div>'
 		],
 		editors: {
 			html: {
 				label: 'HTML',
-				type: 'text',
-				value: '{{{t}}}',
-				layout: {
-					label: 'col-md-3',
-					field: 'col-md-9'
+				type: 'textarea',
+				validate: {
+						required: true
 				}
 			},
 			data: {
 				label: 'Data',
-				type: 'text',
-				value: 'ENTER DATA!',
-				layout: {
-					label: 'col-md-3',
-					field: 'col-md-9'
+				type: 'textarea',
+				validate: {
+						required: true
 				}
+			}
+		},
+		actions: {
+			submit: function() {
+				console.log('submit');
+				// this.getViewIn('fieldset-a').validate(true);
+				// this.getViewIn('fieldset-b').validate(true);
+				// this.validate(true);
+				// app.debug(_.extend(this.get(), {
+				// 		'fieldset-a': this.getViewIn('fieldset-a').get(),
+				// 		'fieldset-b': this.getViewIn('fieldset-b').get()
+				// }));
+			},
+			cancel: function() {
+				console.log('cancel clicked');
 			}
 		}
 	});
