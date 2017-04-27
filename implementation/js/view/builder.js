@@ -70,7 +70,30 @@
 		},
 		actions: {
 			'change-direction': function(){
-				 app.notify('Action triggered!', 'Direction changed!');
+				app.notify('Action triggered!', 'Direction changed!');
+				//TODO: UPDATE the database horizontal and vertical?
+				var groups = this.getRegion('group').$el.children(':first');
+				if (this.getEditor('direction').getVal()==='v') {
+					groups.css({
+						'flex-direction': 'column',
+					});
+					var rowChildren = groups.children();
+					for (var i=0; i<rowChildren.length; i++) {
+						$(rowChildren[i]).css({
+							'flex-direction': 'column',
+						});
+					}
+				} else {
+					groups.css({
+						'flex-direction': 'row',
+					});
+					var columnChildren = groups.children();
+					for (var j=0; j<columnChildren.length; j++) {
+						$(columnChildren[j]).css({
+							'flex-direction': 'row',
+						});
+					}
+				}
 			}
 		},
 		onReady: function() {
@@ -157,32 +180,74 @@
 			html: {
 				label: 'HTML',
 				type: 'textarea',
+				value: 'HTML',
 				validate: {
-						required: true
+					required: true
 				}
 			},
 			data: {
 				label: 'Data',
 				type: 'textarea',
+				value: 'Data',
 				validate: {
-						required: true
+					//TODO: Data should be in a JSON format
 				}
 			}
 		},
 		actions: {
 			submit: function() {
 				console.log('submit');
-				// this.getViewIn('fieldset-a').validate(true);
-				// this.getViewIn('fieldset-b').validate(true);
-				// this.validate(true);
-				// app.debug(_.extend(this.get(), {
-				// 		'fieldset-a': this.getViewIn('fieldset-a').get(),
-				// 		'fieldset-b': this.getViewIn('fieldset-b').get()
-				// }));
+				if (this.getEditor('html').validate())
+					app.notify('Error', this.getEditor('html').validate(), 'danger');
+				var inputHtml = this.getEditor('html').getVal(),
+					inputData = this.getEditor('data').getVal(),
+					jsonData = (inputData === "") ? "" : JSON.parse(inputData),
+			  	preCompiledTemplateScript;
+				if (Array.isArray(jsonData)) {
+					preCompiledTemplateScript = '{{#each .}}' + inputHtml + '{{/each}}';
+				} else {
+					preCompiledTemplateScript = inputHtml;
+				}
+				var theTemplate = Handlebars.compile(preCompiledTemplateScript),
+					theCompiledHTML = theTemplate(jsonData);
+				//console.log(theCompiledHTML);
+
+
+				//get all objects
+				Application.remote({
+					url: 'boxes.json',
+					params: {
+						'groupNumber': 3,
+						'boxName': 'top-left-box'
+					}
+				}).done(function(json) {
+					console.log(json);
+				});
+
+
+				//POST
+				// var res  = Application.remote({
+				// 	url: 'boxes.json',
+				// 	payload: {
+				// 		'_id': '45',
+				// 		'boxName': 'middle-box',
+				// 		"containerTemplate": "<h2>SUB HEADER</h2>",
+				// 		"containerData": "",
+				// 		"isHorizontal": 'false',
+				// 		"groupNumber": '-2'
+				// 	}
+				// });
+				// console.log(res);
 			},
 			cancel: function() {
 				console.log('cancel clicked');
+				this.popover('hide');
 			}
+		},
+		onReady: function() {
+			// this.$el.css({
+			// 	'width': '600px',
+			// });
 		}
 	});
 
