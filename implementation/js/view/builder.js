@@ -10,13 +10,23 @@
 			app.store.set('boxes', app.store.get('boxes') ||
 			{"boxes":
 				[
-					{"template": "", "data":"", "direction":"h", "boxName":"top-left-box", "groupNumber":0},
-		 			{"template": "", "data":"", "direction":"h", "boxName":"top-right-box", "groupNumber":0},
-					{"template": "", "data":"", "direction":"v", "boxName":"middle-box", "groupNumber":0},
+					{"template": "", "data":"", "direction":"h", "boxName":"top-left-box",     "groupNumber":0},
+		 			{"template": "", "data":"", "direction":"h", "boxName":"top-right-box",    "groupNumber":0},
+					{"template": "", "data":"", "direction":"v", "boxName":"middle-box",       "groupNumber":0},
 		 			{"template": "", "data":"", "direction":"h", "boxName":"bottom-right-box", "groupNumber":0}
 				]
 			}
 		),
+		coop: ['update-data'],
+		onUpdateData: function(data){
+			this.show(data.boxName, Box,{
+				data: {
+					boxes: _.filter(data.boxes, function(box){
+						return box.boxName === data.boxName;
+					})
+				}
+			});
+		},
 		onReady: function(){
 			this.$el.css({
 				'padding': '1em',
@@ -26,22 +36,30 @@
 			});
 			this.show('middle-box', Box, {
 				data: {
-					boxes: _.filter(this.get('boxes'), function(box){ return box.boxName === 'middle-box'; })
+					boxes: _.filter(this.get('boxes'), function(box){
+						return box.boxName === 'middle-box';
+					})
 				}
 			});
 			this.show('top-left-box', Box, {
 				data: {
-					boxes: _.filter(this.get('boxes'), function(box){ return box.boxName === 'top-left-box'; })
+					boxes: _.filter(this.get('boxes'), function(box){
+						return box.boxName === 'top-left-box';
+					})
 				}
 			});
 			this.show('top-right-box', Box, {
 				data: {
-					boxes: _.filter(this.get('boxes'), function(box){ return box.boxName === 'top-right-box'; })
+					boxes: _.filter(this.get('boxes'), function(box){
+						return box.boxName === 'top-right-box';
+					})
 				}
 			});
 			this.show('bottom-right-box', Box, {
 				data: {
-					boxes: _.filter(this.get('boxes'), function(box){ return box.boxName === 'bottom-right-box'; })
+					boxes: _.filter(this.get('boxes'), function(box){
+						return box.boxName === 'bottom-right-box';
+					})
 				}
 			});
 		}
@@ -61,8 +79,8 @@
 				options: {
 					inline: true,
 					data: [
-						{label: '<span class="glyphicon glyphicon-resize-horizontal" aria-hidden="true"></span>' , value: 'h'},
-						{label: '<span class="glyphicon glyphicon-resize-vertical" aria-hidden="true"></span>', value: 'v'}
+						{label: '<i class="glyphicon glyphicon-resize-horizontal" aria-hidden="true"></i>' , value: 'h'},
+						{label: '<i class="glyphicon glyphicon-resize-vertical" aria-hidden="true"></i>', value: 'v'}
 					]
 				}
 			},
@@ -155,9 +173,6 @@
 					}
 				 })).popover($btn, {placement: 'top', bond: this, style: {width: '600px'}});
 			}
-		},
-		onReady: function() {
-
 		}
 	});
 
@@ -188,8 +203,8 @@
 				'</div>',
 			'</div>',
 			'<div class="row">',
-				'<span class="btn btn-primary" action-click="submit">Submit</span> ',
-				'<span class="btn btn-info btn-outline" action-click="cancel">Cancel</span> ',
+				'<span class="btn btn-primary" action-click="submit">Submit</span>',
+				'<span class="btn btn-info btn-outline" action-click="cancel">Cancel</span>',
 			'</div>'
 		],
 		editors: {
@@ -223,17 +238,19 @@
 							return (box.boxName !== boxName || box.groupNumber !== groupNumber);
 						});
 						var editedObj = {
-							template:     this.getEditor('html').getVal(),
-							data:         this.getEditor('data').getVal(),
-							direction: this.get('obj').direction,
-							boxName:      boxName,
-							groupNumber:  groupNumber
+							template:    this.getEditor('html').getVal(),
+							data:        this.getEditor('data').getVal(),
+							direction:   this.get('obj').direction,
+							boxName:     boxName,
+							groupNumber: groupNumber
 						};
 						rest.push(editedObj);
 						var newBoxes = {
-							boxes: rest
+							boxes: rest,
+							boxName: boxName
 						};
 						app.store.set('boxes', newBoxes);
+						app.coop('update-data', newBoxes);
 						this.close();
 					} else {
 						//Adding an element
@@ -259,10 +276,12 @@
 							}
 						});
 						editedBoxes.push(newObj);
-						var addedBoxes = {
-							boxes: editedBoxes
+						var newData = {
+							boxes: editedBoxes,
+							boxName: boxName
 						};
-						app.store.set('boxes', addedBoxes);
+						app.store.set('boxes', newData);
+						app.coop('update-data', newData);
 						this.close();
 					}
 				} else {
