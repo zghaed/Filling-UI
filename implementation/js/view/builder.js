@@ -13,8 +13,7 @@
 					{"template": "", "data":"", "direction":"h", "boxName":"top-left-box", "groupNumber":0},
 		 			{"template": "", "data":"", "direction":"h", "boxName":"top-right-box", "groupNumber":0},
 					{"template": "", "data":"", "direction":"v", "boxName":"middle-box", "groupNumber":0},
-		 			{"template": "", "data":"", "direction":"h", "boxName":"bottom-right-box", "groupNumber":0},
-					//{"boxName":"middle-box","template":"<h1>HEADER</h1>","data":"","direction":false,"groupNumber":3}
+		 			{"template": "", "data":"", "direction":"h", "boxName":"bottom-right-box", "groupNumber":0}
 				]
 			}
 		),
@@ -62,8 +61,8 @@
 				options: {
 					inline: true,
 					data: [
-						{label: '<i class="glyphicon glyphicon-resize-horizontal" aria-hidden="true"></i>' , value: 'h'},
-						{label: '<i class="glyphicon glyphicon-resize-vertical" aria-hidden="true"></i>', value: 'v'}
+						{label: '<span class="glyphicon glyphicon-resize-horizontal" aria-hidden="true"></span>' , value: 'h'},
+						{label: '<span class="glyphicon glyphicon-resize-vertical" aria-hidden="true"></span>', value: 'v'}
 					]
 				}
 			},
@@ -215,11 +214,11 @@
 			submit: function() {
 				if (!this.getEditor('html').validate()) {
 					//HTML field is not empty
+					var boxName = this.get('obj').boxName,
+						groupNumber = this.get('obj').groupNumber;
 					if (this.get('type') === 'edit') {
 						//Editing an element
 						var boxes = app.store.get('boxes').boxes,
-							boxName = this.get('obj').boxName,
-						 	groupNumber = this.get('obj').groupNumber,
 							rest = _.filter(boxes, function(box) {
 							return (box.boxName !== boxName || box.groupNumber !== groupNumber);
 						});
@@ -242,28 +241,38 @@
 							template:    this.getEditor('html').getVal(),
 							data:        this.getEditor('data').getVal(),
 							direction:   this.get('obj').direction,
-							boxName:     this.get('obj').boxName,
-							groupNumber: this.get('obj').groupNumber + 1
+							boxName:     boxName,
+							groupNumber: groupNumber + 1
 						};
 						var arrayBoxes = app.store.get('boxes').boxes;
-						arrayBoxes.push(newObj);
+						var editedBoxes = _.map(arrayBoxes, function(box) {
+							if (box.groupNumber <= groupNumber) {
+								return box;
+							} else {
+								return {
+									template:    box.template,
+									data:        box.data,
+									direction:   box.direction,
+									boxName:     box.boxName,
+									groupNumber: box.groupNumber + 1
+								};
+							}
+						});
+						editedBoxes.push(newObj);
 						var addedBoxes = {
-							boxes: arrayBoxes
+							boxes: editedBoxes
 						};
 						app.store.set('boxes', addedBoxes);
 						this.close();
 					}
 				} else {
 					//HTML field is empty
-					app.notify('Error!', this.getEditor('html').validate(), 'danger');
+					this.getEditor('html').validate(true);
 				}
-
-
 			},
 			cancel: function() {
 				this.close();
 			}
 		}
 	});
-
 })(Application);
