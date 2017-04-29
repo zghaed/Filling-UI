@@ -68,7 +68,11 @@
 	var Box = app.view({
 		name: 'box',
 		template: [
-			'<div editor="direction" action="change-direction"></div>',
+			'<div class="hide" editor="direction" action="change-direction"></div>',
+			'<div class="triangle-top-left"></div>',
+			'<div class="triangle-top-right"></div>',
+			'<div class="triangle-bottom-right"></div>',
+			'<div class="triangle-bottom-left"></div>',
 			'<div region="group"></div>',
 		],
 		editors: {
