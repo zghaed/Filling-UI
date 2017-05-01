@@ -1,10 +1,10 @@
 ;(function(app){
 	app.view('Builder', {
 		template: [
-			'<div class="area" region="top-left-box"></div>',
-			'<div class="area" region="top-right-box"></div>',
+			'<div class="area hide" region="top-left-box"></div>',
+			'<div class="area hide" region="top-right-box"></div>',
 			'<div class="area" region="middle-box"></div>',
-			'<div class="area" region="bottom-right-box"></div>',
+			'<div class="area hide" region="bottom-right-box"></div>',
 		],
 		data:
 			app.store.set('boxes', app.store.get('boxes') ||
@@ -18,14 +18,8 @@
 			}
 		),
 		coop: ['update-data'],
-		onUpdateData: function(data){
-			this.show(data.boxName, Box,{
-				data: {
-					boxes: _.filter(data.boxes, function(box){
-						return box.boxName === data.boxName;
-					})
-				}
-			});
+		onUpdateData: function(options){
+			this.set( options);
 		},
 		onReady: function(){
 			this.$el.css({
@@ -69,10 +63,10 @@
 		name: 'box',
 		template: [
 			'<div class="hide" editor="direction" action="change-direction"></div>',
-			'<div class="triangle-top-left"></div>',
-			'<div class="triangle-top-right"></div>',
-			'<div class="triangle-bottom-right"></div>',
-			'<div class="triangle-bottom-left"></div>',
+			'<div class="triangle-top-left hide" action-click="toggle-top-left"></div>',
+			'<div class="triangle-top-right hide" action-click="toggle-top-right"></div>',
+			'<div class="triangle-bottom-right hide" action-click="toggle-bottom-right"></div>',
+			'<div class="triangle-bottom-left hide" action-click="toggle-preview"></div>',
 			'<div region="group"></div>',
 		],
 		editors: {
@@ -90,9 +84,9 @@
 			},
 		},
 		actions: {
-			'change-direction': function(){
+			'change-direction': function() {
 				app.notify('Action triggered!', 'Direction changed!');
-				//TODO: UPDATE the database horizontal and vertical?
+				//TODO: UPDATE the cache horizontal and vertical
 				var groups = this.getRegion('group').$el.children(':first');
 				if (this.getEditor('direction').getVal()==='v') {
 					groups.css({
@@ -115,10 +109,30 @@
 						});
 					}
 				}
+			},
+			'toggle-top-left': function() {
+				this.$el.parent().parent().children('.region-top-left-box').toggleClass('hide');
+				this.$el.children('.triangle-top-left').toggleClass('triangle-show');
+			},
+			'toggle-top-right': function() {
+				this.$el.parent().parent().children('.region-top-right-box').toggleClass('hide');
+				this.$el.children('.triangle-top-right').toggleClass('triangle-show');
+			},
+			'toggle-bottom-right': function() {
+				this.$el.parent().parent().children('.region-bottom-right-box').toggleClass('hide');
+				this.$el.children('.triangle-bottom-right').toggleClass('triangle-show');
+			},
+			'toggle-preview': function() {
+				console.log('preview');
 			}
 		},
 		onReady: function() {
 			this.more('group', this.get('boxes'), Group, true);
+			if (this.$el.parent().hasClass('region-middle-box')) {
+				for (var i=1; i<this.$el.children().length-1; i++) {
+					this.$el.children().eq(i).removeClass('hide');
+				}
+			}
 		}
 	});
 
@@ -250,8 +264,7 @@
 						};
 						rest.push(editedObj);
 						var newBoxes = {
-							boxes: rest,
-							boxName: boxName
+							boxes: rest
 						};
 						app.store.set('boxes', newBoxes);
 						app.coop('update-data', newBoxes);
@@ -281,8 +294,7 @@
 						});
 						editedBoxes.push(newObj);
 						var newData = {
-							boxes: editedBoxes,
-							boxName: boxName
+							boxes: editedBoxes
 						};
 						app.store.set('boxes', newData);
 						app.coop('update-data', newData);
