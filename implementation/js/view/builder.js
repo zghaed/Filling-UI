@@ -19,14 +19,14 @@
 		),
 		coop: ['update-data'],
 		onUpdateData: function(options){
-			this.set( options);
+			this.set(options);
 		},
 		onReady: function(){
 			this.$el.css({
 				'padding': '1em',
 			  'display': 'flex',
 			  'flex-flow': 'row wrap',
-			  'justify-content': 'space-between',
+			  'justify-content': 'flex-end',
 			});
 			this.show('middle-box', Box, {
 				data: {
@@ -62,11 +62,11 @@
 	var Box = app.view({
 		name: 'box',
 		template: [
-			'<div class="hide" editor="direction" action="change-direction"></div>',
-			'<div class="triangle-top-left hide" action-click="toggle-top-left"></div>',
-			'<div class="triangle-top-right hide" action-click="toggle-top-right"></div>',
-			'<div class="triangle-bottom-right hide" action-click="toggle-bottom-right"></div>',
-			'<div class="triangle-bottom-left hide" action-click="toggle-preview"></div>',
+			'<div class="triangle-top-left-box hide" action-click="toggle-top-left"></div>',
+			'<div class="triangle-top-right-box hide" action-click="toggle-top-right"></div>',
+			'<div class="direction hide" editor="direction" action="change-direction"></div>',
+			'<div class="triangle-bottom-right-box hide" action-click="toggle-bottom-right"></div>',
+			'<div class="triangle-bottom-left-box hide" action-click="toggle-preview"></div>',
 			'<div region="group"></div>',
 		],
 		editors: {
@@ -74,6 +74,9 @@
 				type: 'radios',
 				className: 'radio-success',
 				value: ['h'],
+				// function() {
+				// 	return ['h'];
+				// },
 				options: {
 					inline: true,
 					data: [
@@ -112,15 +115,15 @@
 			},
 			'toggle-top-left': function() {
 				this.$el.parent().parent().children('.region-top-left-box').toggleClass('hide');
-				this.$el.children('.triangle-top-left').toggleClass('triangle-show');
+				this.$el.children('.triangle-top-left-box').toggleClass('triangle-show');
 			},
 			'toggle-top-right': function() {
 				this.$el.parent().parent().children('.region-top-right-box').toggleClass('hide');
-				this.$el.children('.triangle-top-right').toggleClass('triangle-show');
+				this.$el.children('.triangle-top-right-box').toggleClass('triangle-show');
 			},
 			'toggle-bottom-right': function() {
 				this.$el.parent().parent().children('.region-bottom-right-box').toggleClass('hide');
-				this.$el.children('.triangle-bottom-right').toggleClass('triangle-show');
+				this.$el.children('.triangle-bottom-right-box').toggleClass('triangle-show');
 			},
 			'toggle-preview': function() {
 				console.log('preview');
@@ -129,9 +132,18 @@
 		onReady: function() {
 			this.more('group', this.get('boxes'), Group, true);
 			if (this.$el.parent().hasClass('region-middle-box')) {
-				for (var i=1; i<this.$el.children().length-1; i++) {
-					this.$el.children().eq(i).removeClass('hide');
+				for (var i=0; i<this.$el.children().length-1; i++) {
+					if (!this.$el.children().eq(i).hasClass('direction')) {
+						this.$el.children().eq(i).removeClass('hide');
+					}
 				}
+			}
+			if (this.get('boxes').length > 1) {
+				this.$el.children('.direction').removeClass('hide');
+				this.$el.parent().removeClass('hide');
+				var name = '.triangle-' + this.$el.parent().attr('region');
+
+				this.$el.parent().parent().children('.region-middle-box').children(':first').children(name).toggleClass('triangle-show');
 			}
 		}
 	});
@@ -196,7 +208,7 @@
 
 	var AddButton = app.view({
 		template: [
-			'<div class="add-button" action-click="add-element" data-placement="bottom">Add</div>'
+			'<div class="add-button" action-click="add-element" data-placement="bottom"><i class="fa fa-plus-circle fa-lg"></i></div>'
 		],
 		actions: {
 			'add-element': function($btn) {
@@ -223,6 +235,7 @@
 			'<div class="row">',
 				'<span class="btn btn-primary" action-click="submit">Submit</span>',
 				'<span class="btn btn-info btn-outline" action-click="cancel">Cancel</span>',
+				'<span class="btn btn-danger" action-click="delete">Delete</span>',
 			'</div>'
 		],
 		editors: {
@@ -306,6 +319,29 @@
 				}
 			},
 			cancel: function() {
+				this.close();
+			},
+			delete: function() {
+				var boxName = this.get('obj').boxName,
+					groupNumber = this.get('obj').groupNumber,
+					direction = this.get('obj').direction,
+					template = this.get('obj').template,
+					data = this.get('obj').data;
+				var arrayBoxes = app.store.get('boxes').boxes;
+				var deletedBoxes = _.filter(arrayBoxes, function(box) {
+					if (!(box.groupNumber === groupNumber &&
+								box.boxName === boxName &&
+								box.direction === direction &&
+								box.template === template &&
+								box.data === data)) {
+						return box;
+					}
+				});
+				var newData = {
+					boxes: deletedBoxes
+				};
+				app.store.set('boxes', newData);
+				app.coop('update-data', newData);
 				this.close();
 			}
 		}
