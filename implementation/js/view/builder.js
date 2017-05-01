@@ -142,7 +142,6 @@
 				this.$el.children('.direction').removeClass('hide');
 				this.$el.parent().removeClass('hide');
 				var name = '.triangle-' + this.$el.parent().attr('region');
-
 				this.$el.parent().parent().children('.region-middle-box').children(':first').children(name).toggleClass('triangle-show');
 			}
 		}
@@ -235,7 +234,7 @@
 			'<div class="row">',
 				'<span class="btn btn-primary" action-click="submit">Submit</span>',
 				'<span class="btn btn-info btn-outline" action-click="cancel">Cancel</span>',
-				'<span class="btn btn-danger" action-click="delete">Delete</span>',
+				'<span class="btn btn-danger delete-group" action-click="delete">Delete</span>',
 			'</div>'
 		],
 		editors: {
@@ -343,6 +342,11 @@
 				app.store.set('boxes', newData);
 				app.coop('update-data', newData);
 				this.close();
+			}
+		},
+		onReady: function() {
+			if (!this.getEditor('html').getVal()) {
+				this.$el.children().eq(1).children().eq(2).addClass('hide');
 			}
 		}
 	});
