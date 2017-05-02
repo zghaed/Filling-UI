@@ -12,7 +12,6 @@
 		},
 		onReady: function(){
 			var boxes = app.store.get(this.get('name')).boxes;
-			//console.log('boxes is in the onready in the buillder, ', boxes);
 			this.$el.css({
 				'padding': '1em',
 			  'display': 'flex',
@@ -69,10 +68,7 @@
 			direction: {
 				type: 'radios',
 				className: 'radio-success',
-				value: ['h'],
-				// function() {
-				// 	return ['h'];
-				// },
+				value: '',
 				options: {
 					inline: true,
 					data: [
@@ -86,8 +82,10 @@
 			'change-direction': function() {
 				app.notify('Action triggered!', 'Direction changed!');
 				//TODO: UPDATE the cache horizontal and vertical
-				var groups = this.getRegion('group').$el.children(':first');
-				if (this.getEditor('direction').getVal()==='v') {
+				var groups = this.getRegion('group').$el.children(':first'),
+					boxName = this.$el.parent().attr('region'),
+					currenctDirection = this.getEditor('direction').getVal();
+				if (currenctDirection==='v') {
 					groups.css({
 						'flex-direction': 'column',
 					});
@@ -108,6 +106,24 @@
 						});
 					}
 				}
+				var arrayBoxes = app.store.get(this.get('name')).boxes;
+				var editedBoxes = _.map(arrayBoxes, function(box) {
+					if (box.boxName === boxName) {
+						return {
+							template:    box.template,
+							data:        box.data,
+							direction:   currenctDirection,
+							boxName:     box.boxName,
+							groupNumber: box.groupNumber
+						};
+					} else {
+						return box;
+					}
+				});
+				var newData = {
+					boxes: editedBoxes
+				};
+				app.store.set(this.get('name'), newData);
 			},
 			'toggle-top-left': function() {
 				this.$el.parent().parent().children('.region-top-left-box').toggleClass('hide');
@@ -145,6 +161,31 @@
 				this.$el.parent().removeClass('hide');
 				var name = '.triangle-' + this.$el.parent().attr('region');
 				this.$el.parent().parent().children('.region-middle-box').children(':first').children(name).toggleClass('triangle-show');
+				var currentDirection = this.get('boxes')[0].direction;
+				var groups = this.getRegion('group').$el.children(':first');
+				if (currentDirection==='v') {
+					this.getEditor('direction').setVal('v');
+					groups.css({
+						'flex-direction': 'column',
+					});
+					var rowChildren = groups.children();
+					for (var j=0; j<rowChildren.length; j++) {
+						$(rowChildren[j]).css({
+							'flex-direction': 'column',
+						});
+					}
+				} else {
+					this.getEditor('direction').setVal('h');
+					groups.css({
+						'flex-direction': 'row',
+					});
+					var columnChildren = groups.children();
+					for (var k=0; k<columnChildren.length; k++) {
+						$(columnChildren[k]).css({
+							'flex-direction': 'row',
+						});
+					}
+				}
 			}
 		}
 	});
@@ -259,13 +300,13 @@
 				 	} catch (e) {
 						return 'Data needs to be in JSON format';
 				 	}
-				 	return false;
+				 	return true;
 				}
 			}
 		},
 		actions: {
 			submit: function() {
-				if (!this.getEditor('html').validate() && this.getEditor('data').validate()) {
+				if (!this.getEditor('html').validate() && (this.getEditor('data').validate()===true)) {
 					//HTML field is not empty
 					var boxName = this.get('obj').boxName,
 						groupNumber = this.get('obj').groupNumber;

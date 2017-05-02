@@ -3,7 +3,6 @@
 	app.view('Glue', {
 		template: '<div region="glue-region" action-contextmenu="show-builder"></div>',
 		onNavigateTo: function(path){
-			console.log('nav to', path);
 			var view = app.get(path).create();
 			this.show('glue-region', view);
 		},
@@ -11,11 +10,10 @@
 			'show-builder': function() {
 				var target = $(event.target),
 					cacheName = this.getViewIn('glue-region').name + '-' + target.attr('region');
-					console.log('name is, ', cacheName);
 				var builder = app.get('Builder').create({
-					data:
-					 	{	"name" : cacheName
- 						}
+					data: {
+						"name" : cacheName
+ 					}
 				});
 				app.store.set(cacheName, app.store.get(cacheName) || {
 					boxes:
