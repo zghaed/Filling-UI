@@ -253,14 +253,19 @@
 				label: 'Data',
 				type: 'textarea',
 				placeholder: 'Data',
-				validate: {
-					//TODO: Data should be in a JSON format
+				validate: function(val) {
+					try {
+						if(val) JSON.parse(val);
+				 	} catch (e) {
+						return 'Data needs to be in JSON format';
+				 	}
+				 	return false;
 				}
 			}
 		},
 		actions: {
 			submit: function() {
-				if (!this.getEditor('html').validate()) {
+				if (!this.getEditor('html').validate() && this.getEditor('data').validate()) {
 					//HTML field is not empty
 					var boxName = this.get('obj').boxName,
 						groupNumber = this.get('obj').groupNumber;
@@ -318,6 +323,7 @@
 				} else {
 					//HTML field is empty
 					this.getEditor('html').validate(true);
+					this.getEditor('data').validate(true);
 				}
 			},
 			cancel: function() {

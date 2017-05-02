@@ -6,7 +6,7 @@
 			'<div class="col-md-12 wrapper-full" style="height:75em;"><div region="test-b" style="border: 1px solid black;"></div></div>',
 			],
 		onReady: function(){
-			this.$el.find('[region="test-a"]').flexlayout([
+			this.$el.find('[region="test-b"]').flexlayout([
 					['1:region1:', ['1:region-1-1:']],
 					['1:region2:', ['1:region-2-1:']],
 				], {
