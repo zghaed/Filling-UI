@@ -6,17 +6,6 @@
 			'<div class="area" region="middle-box"></div>',
 			'<div class="area hide" region="bottom-right-box"></div>',
 		],
-		data:
-			app.store.set('boxes', app.store.get('boxes') ||
-			{"boxes":
-				[
-					{"template": "", "data":"", "direction":"h", "boxName":"top-left-box",     "groupNumber":0},
-		 			{"template": "", "data":"", "direction":"h", "boxName":"top-right-box",    "groupNumber":0},
-					{"template": "", "data":"", "direction":"v", "boxName":"middle-box",       "groupNumber":0},
-		 			{"template": "", "data":"", "direction":"h", "boxName":"bottom-right-box", "groupNumber":0}
-				]
-			}
-		),
 		coop: ['update-data'],
 		onUpdateData: function(options){
 			this.set(options);
