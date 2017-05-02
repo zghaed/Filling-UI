@@ -3,7 +3,7 @@
 	app.view('TestB', {
 		name: 'TestB',
 		template: [
-			'<div class="col-md-12 wrapper-full" style="height:75em;"><div region="test-a" style="border: 1px solid black;"></div></div>',
+			'<div class="col-md-12 wrapper-full" style="height:75em;"><div region="test-b" style="border: 1px solid black;"></div></div>',
 			],
 		onReady: function(){
 			this.$el.find('[region="test-a"]').flexlayout([

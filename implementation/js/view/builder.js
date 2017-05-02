@@ -11,36 +11,43 @@
 			this.set(options);
 		},
 		onReady: function(){
+			var boxes = app.store.get(this.get('name')).boxes;
+			//console.log('boxes is in the onready in the buillder, ', boxes);
 			this.$el.css({
 				'padding': '1em',
 			  'display': 'flex',
 			  'flex-flow': 'row wrap',
 			  'justify-content': 'flex-end',
+				'align-content': 'flex-start'
 			});
 			this.show('middle-box', Box, {
 				data: {
-					boxes: _.filter(this.get('boxes'), function(box){
+					name: this.get('name'),
+					boxes: _.filter(boxes, function(box){
 						return box.boxName === 'middle-box';
 					})
 				}
 			});
 			this.show('top-left-box', Box, {
 				data: {
-					boxes: _.filter(this.get('boxes'), function(box){
+					name: this.get('name'),
+					boxes: _.filter(boxes, function(box){
 						return box.boxName === 'top-left-box';
 					})
 				}
 			});
 			this.show('top-right-box', Box, {
 				data: {
-					boxes: _.filter(this.get('boxes'), function(box){
+					name: this.get('name'),
+					boxes: _.filter(boxes, function(box){
 						return box.boxName === 'top-right-box';
 					})
 				}
 			});
 			this.show('bottom-right-box', Box, {
 				data: {
-					boxes: _.filter(this.get('boxes'), function(box){
+					name: this.get('name'),
+					boxes: _.filter(boxes, function(box){
 						return box.boxName === 'bottom-right-box';
 					})
 				}
@@ -115,7 +122,13 @@
 				this.$el.children('.triangle-bottom-right-box').toggleClass('triangle-show');
 			},
 			'toggle-preview': function() {
-				console.log('preview');
+				var currentBuilder = this.$el.parent().parent();
+				currentBuilder.find('.add-button').toggleClass('toggle-preview');
+		    currentBuilder.find('.direction').toggleClass('toggle-preview');
+				currentBuilder.find('.triangle-top-left-box').toggleClass('toggle-preview');
+				currentBuilder.find('.triangle-top-right-box').toggleClass('toggle-preview');
+				currentBuilder.find('.triangle-bottom-right-box').toggleClass('toggle-preview');
+		    currentBuilder.find('.area').toggleClass('toggle-borders');
 			}
 		},
 		onReady: function() {
@@ -141,8 +154,9 @@
 			'<div region="content"></div>',
 			'<div region="add"></div>',
 		],
-		useParentData: 'boxes',
+		useParentData: 'name',//'[boxes, name]',
 		onReady: function() {
+			//console.log('here in the group use parent data , ', this.get());
 			if (this.get('template') !== "") {
 				var theTemplateScript = this.get('template'),
 					inputData = this.get('data'),
@@ -252,7 +266,7 @@
 						groupNumber = this.get('obj').groupNumber;
 					if (this.get('type') === 'edit') {
 						//Editing an element
-						var boxes = app.store.get('boxes').boxes,
+						var boxes = app.store.get(this.get('obj').name).boxes,
 							rest = _.filter(boxes, function(box) {
 							return (box.boxName !== boxName || box.groupNumber !== groupNumber);
 						});
@@ -267,7 +281,7 @@
 						var newBoxes = {
 							boxes: rest
 						};
-						app.store.set('boxes', newBoxes);
+						app.store.set(this.get('obj').name, newBoxes);
 						app.coop('update-data', newBoxes);
 						this.close();
 					} else {
@@ -279,7 +293,7 @@
 							boxName:     boxName,
 							groupNumber: groupNumber + 1
 						};
-						var arrayBoxes = app.store.get('boxes').boxes;
+						var arrayBoxes = app.store.get(this.get('obj').name).boxes;
 						var editedBoxes = _.map(arrayBoxes, function(box) {
 							if (box.groupNumber <= groupNumber) {
 								return box;
@@ -297,7 +311,7 @@
 						var newData = {
 							boxes: editedBoxes
 						};
-						app.store.set('boxes', newData);
+						app.store.set(this.get('obj').name, newData);
 						app.coop('update-data', newData);
 						this.close();
 					}
@@ -315,7 +329,7 @@
 					direction = this.get('obj').direction,
 					template = this.get('obj').template,
 					data = this.get('obj').data;
-				var arrayBoxes = app.store.get('boxes').boxes;
+				var arrayBoxes = app.store.get(this.get('obj').name).boxes;
 				var deletedBoxes = _.filter(arrayBoxes, function(box) {
 					if (!(box.groupNumber === groupNumber &&
 								box.boxName === boxName &&
@@ -328,7 +342,7 @@
 				var newData = {
 					boxes: deletedBoxes
 				};
-				app.store.set('boxes', newData);
+				app.store.set(this.get('obj').name, newData);
 				app.coop('update-data', newData);
 				this.close();
 			}
