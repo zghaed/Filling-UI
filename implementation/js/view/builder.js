@@ -68,7 +68,7 @@
 			'<div class="triangle-top-right-box hide" action-click="toggle-top-right"></div>',
 			'<div class="direction hide" editor="direction" action="change-direction"></div>',
 			'<div class="triangle-bottom-right-box hide" action-click="toggle-bottom-right"></div>',
-			'<div class="triangle-bottom-left-box hide" action-click="toggle-preview"></div>',
+			'<div class="triangle-bottom-left-box hide" ui="toggle-preview" action-click="toggle-preview"></div>',
 			'<div region="group"></div>',
 		],
 		editors: {
@@ -146,6 +146,9 @@
 			},
 			'toggle-preview': function(){
 				var currentBuilder = this.$el.parent().parent();
+				_.each(currentBuilder.find('[action-click="edit-element"]'), function(r){
+					$(r).toggleClass('toggle-pointer');
+				});
 				currentBuilder.find('.add-button').toggleClass('toggle-preview');
 		    currentBuilder.find('.direction').toggleClass('toggle-preview');
 				currentBuilder.find('.triangle-top-left-box').toggleClass('toggle-preview');
@@ -202,9 +205,8 @@
 			'<div region="content"></div>',
 			'<div region="add"></div>',
 		],
-		useParentData: 'name',//'[boxes, name]',
+		useParentData: 'name',
 		onReady: function(){
-			//console.log('here in the group use parent data , ', this.get());
 			if (this.get('template') !== ""){
 				var theTemplateScript = this.get('template'),
 					inputData = this.get('data'),
@@ -341,7 +343,6 @@
 							newBoxes: newBoxes,
 							name: name
 						};
-						console.log('passing to coop ,', name);
 						app.store.set(this.get('obj').name, newBoxes);
 						app.coop('update-data', options);
 						this.close();
@@ -372,8 +373,15 @@
 						var newData = {
 							boxes: editedBoxes
 						};
+						var addNameArray = this.get('obj').name.split('-');
+						addNameArray.shift();
+						var addName = addNameArray.join('-');
+						var addOptions = {
+							newBoxes: newData,
+							name: addName
+						};
 						app.store.set(this.get('obj').name, newData);
-						app.coop('update-data', newData);
+						app.coop('update-data', addOptions);
 						this.close();
 					}
 				} else {

@@ -66,19 +66,17 @@
 					});
 					var nameArray = key.split('-');
 					nameArray.shift();
-					var name = nameArray.join('-'),
-						sprayResult = app.spray($('[region="'+name+'"]'), builder);
-					sprayResult.$el.attr('region', name);
+					var name = nameArray.join('-');
+
 					self.listenTo(builder, 'ready', function() {
-						console.log('in listen to, ', self.$el.find('[region="'+name+'"] .region-add'));
-						console.log('this works, ', self.$el.find('[region="'+name+'"] .triangle-top-right-box'));
-						self.$el.find('[region="'+name+'"] .add-button').toggleClass('toggle-preview');
-				    self.$el.find('[region="'+name+'"] .direction').toggleClass('toggle-preview');
-						self.$el.find('[region="'+name+'"] .triangle-top-left-box').toggleClass('toggle-preview');
-						self.$el.find('[region="'+name+'"] .triangle-top-right-box').toggleClass('toggle-preview');
-						self.$el.find('[region="'+name+'"] .triangle-bottom-right-box').toggleClass('toggle-preview');
-				    self.$el.find('[region="'+name+'"] .area').toggleClass('toggle-borders');
+						_.each(builder.regions, function(selector, r){
+							var box = builder.getViewIn(r);
+							//app.debug('box:', box.ui['toggle-preview']) && box.ui['toggle-preview'].click();
+						});
 					});
+
+					var sprayResult = app.spray($('[region="'+name+'"]'), builder);
+					sprayResult.$el.attr('region', name);
 				});
 			}
 		}
