@@ -8,7 +8,9 @@
 		],
 		coop: ['update-data'],
 		onUpdateData: function(options){
-			this.set(options);
+			if( options.name === this.$el.parent().attr('region')) {
+				this.set(options.newBoxes);
+			}
 		},
 		onReady: function(){
 			var boxes = app.store.get(this.get('name')).boxes;
@@ -17,7 +19,9 @@
 			  'display': 'flex',
 			  'flex-flow': 'row wrap',
 			  'justify-content': 'flex-end',
-				'align-content': 'flex-start'
+				'align-content': 'flex-start',
+				'align-items': 'stretch',
+				'overflow': 'auto'
 			});
 			this.show('middle-box', Box, {
 				data: {
@@ -51,6 +55,9 @@
 					})
 				}
 			});
+		},
+		onClose: function(){
+			console.log('closing...');
 		}
 	});
 
@@ -79,18 +86,18 @@
 			},
 		},
 		actions: {
-			'change-direction': function() {
+			'change-direction': function(){
 				app.notify('Action triggered!', 'Direction changed!');
 				//TODO: UPDATE the cache horizontal and vertical
 				var groups = this.getRegion('group').$el.children(':first'),
 					boxName = this.$el.parent().attr('region'),
 					currenctDirection = this.getEditor('direction').getVal();
-				if (currenctDirection==='v') {
+				if (currenctDirection==='v'){
 					groups.css({
 						'flex-direction': 'column',
 					});
 					var rowChildren = groups.children();
-					for (var i=0; i<rowChildren.length; i++) {
+					for (var i=0; i<rowChildren.length; i++){
 						$(rowChildren[i]).css({
 							'flex-direction': 'column',
 						});
@@ -100,15 +107,15 @@
 						'flex-direction': 'row',
 					});
 					var columnChildren = groups.children();
-					for (var j=0; j<columnChildren.length; j++) {
+					for (var j=0; j<columnChildren.length; j++){
 						$(columnChildren[j]).css({
 							'flex-direction': 'row',
 						});
 					}
 				}
 				var arrayBoxes = app.store.get(this.get('name')).boxes;
-				var editedBoxes = _.map(arrayBoxes, function(box) {
-					if (box.boxName === boxName) {
+				var editedBoxes = _.map(arrayBoxes, function(box){
+					if (box.boxName === boxName){
 						return {
 							template:    box.template,
 							data:        box.data,
@@ -125,19 +132,19 @@
 				};
 				app.store.set(this.get('name'), newData);
 			},
-			'toggle-top-left': function() {
+			'toggle-top-left': function(){
 				this.$el.parent().parent().children('.region-top-left-box').toggleClass('hide');
 				this.$el.children('.triangle-top-left-box').toggleClass('triangle-show');
 			},
-			'toggle-top-right': function() {
+			'toggle-top-right': function(){
 				this.$el.parent().parent().children('.region-top-right-box').toggleClass('hide');
 				this.$el.children('.triangle-top-right-box').toggleClass('triangle-show');
 			},
-			'toggle-bottom-right': function() {
+			'toggle-bottom-right': function(){
 				this.$el.parent().parent().children('.region-bottom-right-box').toggleClass('hide');
 				this.$el.children('.triangle-bottom-right-box').toggleClass('triangle-show');
 			},
-			'toggle-preview': function() {
+			'toggle-preview': function(){
 				var currentBuilder = this.$el.parent().parent();
 				currentBuilder.find('.add-button').toggleClass('toggle-preview');
 		    currentBuilder.find('.direction').toggleClass('toggle-preview');
@@ -147,29 +154,29 @@
 		    currentBuilder.find('.area').toggleClass('toggle-borders');
 			}
 		},
-		onReady: function() {
+		onReady: function(){
 			this.more('group', this.get('boxes'), Group, true);
-			if (this.$el.parent().hasClass('region-middle-box')) {
-				for (var i=0; i<this.$el.children().length-1; i++) {
-					if (!this.$el.children().eq(i).hasClass('direction')) {
+			if (this.$el.parent().hasClass('region-middle-box')){
+				for (var i=0; i<this.$el.children().length-1; i++){
+					if (!this.$el.children().eq(i).hasClass('direction')){
 						this.$el.children().eq(i).removeClass('hide');
 					}
 				}
 			}
-			if (this.get('boxes').length > 1) {
+			if (this.get('boxes').length > 1){
 				this.$el.children('.direction').removeClass('hide');
 				this.$el.parent().removeClass('hide');
 				var name = '.triangle-' + this.$el.parent().attr('region');
 				this.$el.parent().parent().children('.region-middle-box').children(':first').children(name).toggleClass('triangle-show');
 				var currentDirection = this.get('boxes')[0].direction;
 				var groups = this.getRegion('group').$el.children(':first');
-				if (currentDirection==='v') {
+				if (currentDirection==='v'){
 					this.getEditor('direction').setVal('v');
 					groups.css({
 						'flex-direction': 'column',
 					});
 					var rowChildren = groups.children();
-					for (var j=0; j<rowChildren.length; j++) {
+					for (var j=0; j<rowChildren.length; j++){
 						$(rowChildren[j]).css({
 							'flex-direction': 'column',
 						});
@@ -180,7 +187,7 @@
 						'flex-direction': 'row',
 					});
 					var columnChildren = groups.children();
-					for (var k=0; k<columnChildren.length; k++) {
+					for (var k=0; k<columnChildren.length; k++){
 						$(columnChildren[k]).css({
 							'flex-direction': 'row',
 						});
@@ -196,14 +203,14 @@
 			'<div region="add"></div>',
 		],
 		useParentData: 'name',//'[boxes, name]',
-		onReady: function() {
+		onReady: function(){
 			//console.log('here in the group use parent data , ', this.get());
-			if (this.get('template') !== "") {
+			if (this.get('template') !== ""){
 				var theTemplateScript = this.get('template'),
 					inputData = this.get('data'),
 			  	jsonData = (inputData === "") ? "" : JSON.parse(inputData),
 			  	preCompiledTemplateScript;
-				if (Array.isArray(jsonData)) {
+				if (Array.isArray(jsonData)){
 					preCompiledTemplateScript = '{{#each .}}' + theTemplateScript + '{{/each}}';
 				} else {
 					preCompiledTemplateScript = theTemplateScript;
@@ -244,7 +251,7 @@
 					  data: obj.data,
 						obj: obj
 					}
-				 })).popover($btn, {placement: 'top', bond: this, style: {width: '600px'}});
+				})).popover($btn, {placement: 'top', bond: this, style: {width: '600px'}});
 			}
 		}
 	});
@@ -254,7 +261,7 @@
 			'<div class="add-button" action-click="add-element" data-placement="bottom"><i class="fa fa-plus-circle fa-lg"></i></div>'
 		],
 		actions: {
-			'add-element': function($btn) {
+			'add-element': function($btn){
 				(new PopOver({
 				data: {
 					type: 'add',
@@ -294,10 +301,10 @@
 				label: 'Data',
 				type: 'textarea',
 				placeholder: 'Data',
-				validate: function(val) {
+				validate: function(val){
 					try {
 						if(val) JSON.parse(val);
-				 	} catch (e) {
+				 	} catch (e){
 						return 'Data needs to be in JSON format';
 				 	}
 				 	return true;
@@ -305,15 +312,15 @@
 			}
 		},
 		actions: {
-			submit: function() {
-				if (!this.getEditor('html').validate() && (this.getEditor('data').validate()===true)) {
+			submit: function(){
+				if (!this.getEditor('html').validate() && (this.getEditor('data').validate()===true)){
 					//HTML field is not empty
 					var boxName = this.get('obj').boxName,
 						groupNumber = this.get('obj').groupNumber;
-					if (this.get('type') === 'edit') {
+					if (this.get('type') === 'edit'){
 						//Editing an element
 						var boxes = app.store.get(this.get('obj').name).boxes,
-							rest = _.filter(boxes, function(box) {
+							rest = _.filter(boxes, function(box){
 							return (box.boxName !== boxName || box.groupNumber !== groupNumber);
 						});
 						var editedObj = {
@@ -327,8 +334,16 @@
 						var newBoxes = {
 							boxes: rest
 						};
+						var nameArray = this.get('obj').name.split('-');
+						nameArray.shift();
+						var name = nameArray.join('-');
+						var options = {
+							newBoxes: newBoxes,
+							name: name
+						};
+						console.log('passing to coop ,', name);
 						app.store.set(this.get('obj').name, newBoxes);
-						app.coop('update-data', newBoxes);
+						app.coop('update-data', options);
 						this.close();
 					} else {
 						//Adding an element
@@ -340,8 +355,8 @@
 							groupNumber: groupNumber + 1
 						};
 						var arrayBoxes = app.store.get(this.get('obj').name).boxes;
-						var editedBoxes = _.map(arrayBoxes, function(box) {
-							if (box.groupNumber <= groupNumber) {
+						var editedBoxes = _.map(arrayBoxes, function(box){
+							if (box.groupNumber <= groupNumber){
 								return box;
 							} else {
 								return {
@@ -367,22 +382,22 @@
 					this.getEditor('data').validate(true);
 				}
 			},
-			cancel: function() {
+			cancel: function(){
 				this.close();
 			},
-			delete: function() {
+			delete: function(){
 				var boxName = this.get('obj').boxName,
 					groupNumber = this.get('obj').groupNumber,
 					direction = this.get('obj').direction,
 					template = this.get('obj').template,
 					data = this.get('obj').data;
 				var arrayBoxes = app.store.get(this.get('obj').name).boxes;
-				var deletedBoxes = _.filter(arrayBoxes, function(box) {
+				var deletedBoxes = _.filter(arrayBoxes, function(box){
 					if (!(box.groupNumber === groupNumber &&
 								box.boxName === boxName &&
 								box.direction === direction &&
 								box.template === template &&
-								box.data === data)) {
+								box.data === data)){
 						return box;
 					}
 				});
@@ -394,10 +409,11 @@
 				this.close();
 			}
 		},
-		onReady: function() {
-			if (!this.getEditor('html').getVal()) {
-				this.$el.children().eq(1).children().eq(2).addClass('hide');
+		onReady: function(){
+			if (!this.getEditor('html').getVal()){
+				this.$el.find('.delete-group').addClass('hide');
 			}
+			this.$el.find('textarea').css('height', '200px');
 		}
 	});
 })(Application);
