@@ -25,10 +25,10 @@
 					app.store.set(cacheName, app.store.get(cacheName) || {
 						boxes:
 						[
-							{"template": "", "data":"", "direction":"h", "boxName":"top-left-box",     "groupNumber":0},
-							{"template": "", "data":"", "direction":"h", "boxName":"top-right-box",    "groupNumber":0},
-							{"template": "", "data":"", "direction":"v", "boxName":"middle-box",       "groupNumber":0},
-							{"template": "", "data":"", "direction":"h", "boxName":"bottom-right-box", "groupNumber":0}
+							{"template": "", "data":"", "css":"", "direction":"h", "boxName":"top-left-box",     "groupNumber":0},
+							{"template": "", "data":"", "css":"", "direction":"h", "boxName":"top-right-box",    "groupNumber":0},
+							{"template": "", "data":"", "css":"", "direction":"v", "boxName":"middle-box",       "groupNumber":0},
+							{"template": "", "data":"", "css":"", "direction":"h", "boxName":"bottom-right-box", "groupNumber":0}
 						]
 					});
 					app.spray(target, builder);
@@ -43,13 +43,15 @@
 				_.each(caches, function(val, key){
 					var keyArray = key.split('-');
 					if (keyArray[0] === viewName) {
-				    keys.push(key);
+						if(val.boxes.length < 5) {
+							app.store.set(key);
+						} else {
+							keys.push(key);
+						}
 				  }
 				});
-				console.log('existed = ', keys);
 				var self = this;
 				_.each(keys, function(key){
-					console.log('key is, ', key);
 					var builder = app.get('Builder').create({
 						data: {
 							"name" : key
@@ -58,25 +60,26 @@
 					app.store.set(key, app.store.get(key) || {
 						boxes:
 						[
-							{"template": "", "data":"", "direction":"h", "boxName":"top-left-box",     "groupNumber":0},
-							{"template": "", "data":"", "direction":"h", "boxName":"top-right-box",    "groupNumber":0},
-							{"template": "", "data":"", "direction":"v", "boxName":"middle-box",       "groupNumber":0},
-							{"template": "", "data":"", "direction":"h", "boxName":"bottom-right-box", "groupNumber":0}
+							{"template": "", "data":"", "css":"", "direction":"h", "boxName":"top-left-box",     "groupNumber":0},
+							{"template": "", "data":"", "css":"", "direction":"h", "boxName":"top-right-box",    "groupNumber":0},
+							{"template": "", "data":"", "css":"", "direction":"v", "boxName":"middle-box",       "groupNumber":0},
+							{"template": "", "data":"", "css":"", "direction":"h", "boxName":"bottom-right-box", "groupNumber":0}
 						]
 					});
 					var nameArray = key.split('-');
 					nameArray.shift();
 					var name = nameArray.join('-');
 
-					self.listenTo(builder, 'ready', function() {
+					self.listenToOnce(builder, 'view:box-ready', function() {
 						_.each(builder.regions, function(selector, r){
 							var box = builder.getViewIn(r);
-							//app.debug('box:', box.ui['toggle-preview']) && box.ui['toggle-preview'].click();
+							_.defer(function(){
+								box.ui['toggle-preview'].click();
+							});
 						});
 					});
 
-					var sprayResult = app.spray($('[region="'+name+'"]'), builder);
-					sprayResult.$el.attr('region', name);
+					app.spray($('[region="'+name+'"]'), builder);
 				});
 			}
 		}
