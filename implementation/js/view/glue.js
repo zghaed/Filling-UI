@@ -1,8 +1,8 @@
-;(function(app){
+;(function(app) {
 
   app.view('Glue', {
     template: '<div region="glue-region" action-contextmenu="show-builder"></div>',
-    onNavigateTo: function(path){
+    onNavigateTo: function(path) {
       var view = app.get(path).create();
       this.show('glue-region', view);
       this.listenTo(view, 'ready', function() {
@@ -10,7 +10,7 @@
       });
     },
     actions: {
-      'show-builder': function($btn, e){
+      'show-builder': function($btn, e) {
         var target = $(e.target),
           cacheName = this.getViewIn('glue-region').name + '-' + target.attr('region'),
           regions = (target.attr('region') === undefined) ||
@@ -25,13 +25,13 @@
           app.store.set(cacheName, app.store.get(cacheName) || {
             boxes:
             [
-              {"template": "", "data":"", "css":"#header{color:yellow;}", "direction":"h", "boxName":"top-left-box",     "groupNumber":0},
-              {"template": "", "data":"", "css":"#header{color:bluew;}", "direction":"h", "boxName":"top-right-box",    "groupNumber":0},
-              {"template": "", "data":"", "css":"#header{color:red;}", "direction":"v", "boxName":"middle-box",       "groupNumber":0},
-              {"template": "", "data":"", "css":"#header{color:green;}", "direction":"h", "boxName":"bottom-right-box", "groupNumber":0}
+              {"template": "", "data":"", "css":"", "direction":"h", "boxName":"top-left-box",     "groupNumber":0},
+              {"template": "", "data":"", "css":"", "direction":"h", "boxName":"top-right-box",    "groupNumber":0},
+              {"template": "", "data":"", "css":"", "direction":"v", "boxName":"middle-box",       "groupNumber":0},
+              {"template": "", "data":"", "css":"", "direction":"h", "boxName":"bottom-right-box", "groupNumber":0}
             ]
           });
-          app.spray(target, builder);
+          this.spray(target, builder);
         }
       }
     },
@@ -40,7 +40,7 @@
         var caches = app.store.getAll();
         var keys = [];
         var viewName = this.getViewIn('glue-region').name;
-        _.each(caches, function(val, key){
+        _.each(caches, function(val, key) {
           var keyArray = key.split('-');
           if (keyArray[0] === viewName) {
             if(val.boxes.length < 5) {
@@ -51,7 +51,7 @@
           }
         });
         var self = this;
-        _.each(keys, function(key){
+        _.each(keys, function(key) {
           var builder = app.get('Builder').create({
             data: {
               "name" : key
@@ -71,15 +71,15 @@
           var name = nameArray.join('-');
 
           self.listenToOnce(builder, 'view:box-ready', function() {
-            _.each(builder.regions, function(selector, r){
+            _.each(builder.regions, function(selector, r) {
               var box = builder.getViewIn(r);
-              _.defer(function(){
+              _.defer(function() {
                 box.ui['toggle-preview'].click();
               });
             });
           });
 
-          app.spray($('[region="'+name+'"]'), builder);
+          self.spray($('[region="'+name+'"]'), builder);
         });
       }
     }

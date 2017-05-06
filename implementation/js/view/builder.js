@@ -1,4 +1,4 @@
-;(function(app){
+;(function(app) {
   app.view('Builder', {
     template: [
       '<div class="area hide" region="top-left-box"></div>',
@@ -7,12 +7,12 @@
       '<div class="area hide" region="bottom-right-box"></div>',
     ],
     coop: ['update-data'],
-    onUpdateData: function(options){
-      if( options.name === this.$el.parent().attr('region')){
+    onUpdateData: function(options) {
+      if( options.name === this.$el.parent().attr('region')) {
         this.set(options.newBoxes);
       }
     },
-    onReady: function(){
+    onReady: function() {
       var boxes = app.store.get(this.get('name')).boxes;
       this.$el.css({
         'padding': '1em',
@@ -30,15 +30,18 @@
           return (self.show(name, Box, {
             data: {
               name: self.get('name'),
-              boxes: _.filter(boxes, function(box){
+              boxes: _.filter(boxes, function(box) {
                 return box.boxName === name;
               })
             }
           }));
         }),
-       'ready', _.bind(function(boxes){
+       'ready', _.bind(function(boxes) {
         this.trigger('view:box-ready');
       }, this));
+    },
+    onClose: function() {
+      console.log('closign');
     }
   });
 
@@ -67,17 +70,17 @@
       },
     },
     actions: {
-      'change-direction': function(){
+      'change-direction': function() {
         app.notify('Action triggered!', 'Direction changed!');
         var groups = this.getRegion('group').$el.children(':first'),
           boxName = this.$el.parent().attr('region'),
           currenctDirection = this.getEditor('direction').getVal();
-        if (currenctDirection==='v'){
+        if (currenctDirection==='v') {
           groups.css({
             'flex-direction': 'column',
           });
           var rowChildren = groups.children();
-          for (var i=0; i<rowChildren.length; i++){
+          for (var i=0; i<rowChildren.length; i++) {
             $(rowChildren[i]).css({
               'flex-direction': 'column',
             });
@@ -87,15 +90,15 @@
             'flex-direction': 'row',
           });
           var columnChildren = groups.children();
-          for (var j=0; j<columnChildren.length; j++){
+          for (var j=0; j<columnChildren.length; j++) {
             $(columnChildren[j]).css({
               'flex-direction': 'row',
             });
           }
         }
         var arrayBoxes = app.store.get(this.get('name')).boxes;
-        var editedBoxes = _.map(arrayBoxes, function(box){
-          if (box.boxName === boxName){
+        var editedBoxes = _.map(arrayBoxes, function(box) {
+          if (box.boxName === boxName) {
             return {
               template:    box.template,
               data:        box.data,
@@ -113,19 +116,19 @@
         };
         app.store.set(this.get('name'), newData);
       },
-      'toggle-top-left': function(){
+      'toggle-top-left': function() {
         this.$el.parent().parent().children('.region-top-left-box').toggleClass('hide');
         this.$el.children('.triangle-top-left-box').toggleClass('triangle-show');
       },
-      'toggle-top-right': function(){
+      'toggle-top-right': function() {
         this.$el.parent().parent().children('.region-top-right-box').toggleClass('hide');
         this.$el.children('.triangle-top-right-box').toggleClass('triangle-show');
       },
-      'toggle-bottom-right': function(){
+      'toggle-bottom-right': function() {
         this.$el.parent().parent().children('.region-bottom-right-box').toggleClass('hide');
         this.$el.children('.triangle-bottom-right-box').toggleClass('triangle-show');
       },
-      'toggle-preview': function(){
+      'toggle-preview': function() {
         if(this._preview === undefined)
            this._preview = false;
         var currentBuilder = this.$el.parent().parent();
@@ -140,29 +143,29 @@
         currentBuilder.find('.area').toggleClass('toggle-borders', this._preview);
       }
     },
-    onReady: function(){
+    onReady: function() {
       this.more('group', this.get('boxes'), Group, true);
-      if (this.$el.parent().hasClass('region-middle-box')){
-        for (var i=0; i<this.$el.children().length-1; i++){
-          if (!this.$el.children().eq(i).hasClass('direction')){
+      if (this.$el.parent().hasClass('region-middle-box')) {
+        for (var i=0; i<this.$el.children().length-1; i++) {
+          if (!this.$el.children().eq(i).hasClass('direction')) {
             this.$el.children().eq(i).removeClass('hide');
           }
         }
       }
-      if (this.get('boxes').length > 1){
+      if (this.get('boxes').length > 1) {
         this.$el.children('.direction').removeClass('hide');
         this.$el.parent().removeClass('hide');
         var name = '.triangle-' + this.$el.parent().attr('region');
         this.$el.parent().parent().children('.region-middle-box').children(':first').children(name).toggleClass('triangle-show');
         var currentDirection = this.get('boxes')[0].direction;
         var groups = this.getRegion('group').$el.children(':first');
-        if (currentDirection==='v'){
+        if (currentDirection==='v') {
           this.getEditor('direction').setVal('v');
           groups.css({
             'flex-direction': 'column',
           });
           var rowChildren = groups.children();
-          for (var j=0; j<rowChildren.length; j++){
+          for (var j=0; j<rowChildren.length; j++) {
             $(rowChildren[j]).css({
               'flex-direction': 'column',
             });
@@ -173,7 +176,7 @@
             'flex-direction': 'row',
           });
           var columnChildren = groups.children();
-          for (var k=0; k<columnChildren.length; k++){
+          for (var k=0; k<columnChildren.length; k++) {
             $(columnChildren[k]).css({
               'flex-direction': 'row',
             });
@@ -189,13 +192,25 @@
       '<div region="add"></div>',
     ],
     useParentData: 'name',
-    onReady: function(){
-      if (this.get('template') !== ""){
+    onReady: function() {
+      var theme = $('head link[rel="stylesheet"]').attr('href').split('/')[1];
+      console.log('trying to test remote', theme);
+      app.remote({
+        url: 'api/test',
+        payload: {
+          less: this.get('css'),
+          theme: theme
+        }
+      }).done(function(data){
+        console.log(data);
+        $('head').append('<style>'+data.msg+'</style>');
+      });
+      if (this.get('template') !== "") {
         var theTemplateScript = this.get('template'),
           inputData = this.get('data'),
           jsonData = (inputData === "") ? "" : JSON.parse(inputData),
           preCompiledTemplateScript;
-        if (Array.isArray(jsonData)){
+        if (Array.isArray(jsonData)) {
           preCompiledTemplateScript = '{{#each .}}' + theTemplateScript + '{{/each}}';
         } else {
           preCompiledTemplateScript = theTemplateScript;
@@ -227,7 +242,7 @@
       '<div action-click="edit-element">{{{element}}}</div>'
     ],
     actions: {
-      'edit-element': function($btn){
+      'edit-element': function($btn) {
         var obj = this.get('obj');
         (new PopOver({
           data: {
@@ -247,12 +262,11 @@
       '<div class="add-button" action-click="add-element" data-placement="bottom"><i class="fa fa-plus-circle fa-lg"></i></div>'
     ],
     actions: {
-      'add-element': function($btn){
+      'add-element': function($btn) {
         (new PopOver({
         data: {
           type: 'add',
-          obj: this.get('obj'),
-          css: this.get('obj').css
+          obj: this.get('obj')
           }
         })).popover($btn, {placement: 'top', bond: this, style: {width: '600px'}});
       }
@@ -264,12 +278,12 @@
       '<div class="col-md-12">',
         '<div class="row">',
           '<div class="form form-horizontal">',
-          '<ul class="nav nav-tabs">',
-            '<li activate="single" tabId="html" class="active"><a>html</a></li>',
-            '<li activate="single" tabId="css"><a>css</a></li>',
-          '</ul>',
-          '<div region="tabs"></div>',
-          '<div editor="data"></div>',
+            '<ul class="nav nav-tabs">',
+              '<li activate="single" tabId="html" class="active"><a>html</a></li>',
+              '<li activate="single" tabId="css"><a>css</a></li>',
+            '</ul>',
+            '<div region="tabs"></div>',
+            '<div editor="data"></div>',
           '</div>',
         '</div>',
       '</div>',
@@ -279,13 +293,14 @@
         '<span class="btn btn-danger delete-group" action-click="delete">Delete</span>',
       '</div>'
     ],
-    onItemActivated: function($item){
+    onItemActivated: function($item) {
       //TODO: onItemActivated is not qorking with class="activate"
       var tabId = $item.attr('tabId');
       this.tab('tabs', app.view({
-        template: ['<div editor="'+tabId+'"></div>'],
+        template: ['<div editor="code"></div>'],
+        useParentData: tabId,
         editors: {
-          tabId: {
+          code: {
             value: this.get(tabId),
             label: tabId,
             type: 'textarea',
@@ -302,10 +317,10 @@
         label: 'Data',
         type: 'textarea',
         placeholder: 'Data',
-        validate: function(val){
+        validate: function(val) {
           try {
             if(val) JSON.parse(val);
-           } catch (e){
+           } catch (e) {
             return 'Data needs to be in JSON format';
            }
            return true;
@@ -313,16 +328,16 @@
       }
     },
     actions: {
-      submit: function(){
+      submit: function() {
         if (this.getViewIn('tabs').getViewIn('tab-html').$el.find('textarea').val() &&
-          (this.getEditor('data').validate()===true)){
+          (this.getEditor('data').validate()===true)) {
           //HTML field is not empty
           var boxName = this.get('obj').boxName,
             groupNumber = this.get('obj').groupNumber;
-          if (this.get('type') === 'edit'){
+          if (this.get('type') === 'edit') {
             //Editing an element
             var boxes = app.store.get(this.get('obj').name).boxes,
-              rest = _.filter(boxes, function(box){
+              rest = _.filter(boxes, function(box) {
               return (box.boxName !== boxName || box.groupNumber !== groupNumber);
             });
             var editedObj = {
@@ -358,8 +373,8 @@
               groupNumber: groupNumber + 1
             };
             var arrayBoxes = app.store.get(this.get('obj').name).boxes;
-            var editedBoxes = _.map(arrayBoxes, function(box){
-              if (box.groupNumber <= groupNumber){
+            var editedBoxes = _.map(arrayBoxes, function(box) {
+              if (box.groupNumber <= groupNumber) {
                 return box;
               } else {
                 return {
@@ -395,10 +410,10 @@
           this.getEditor('data').validate(true);
         }
       },
-      cancel: function(){
+      cancel: function() {
         this.close();
       },
-      delete: function(){
+      delete: function() {
         var boxName   = this.get('obj').boxName,
           groupNumber = this.get('obj').groupNumber,
           direction   = this.get('obj').direction,
@@ -406,13 +421,13 @@
           data        = this.get('obj').data,
           css         = this.get('obj').css;
         var arrayBoxes = app.store.get(this.get('obj').name).boxes;
-        var deletedBoxes = _.filter(arrayBoxes, function(box){
+        var deletedBoxes = _.filter(arrayBoxes, function(box) {
           if (!(box.groupNumber === groupNumber &&
                 box.boxName     === boxName &&
                 box.direction   === direction &&
                 box.template    === template &&
                 box.data        === data &&
-                box.css         === css)){
+                box.css         === css)) {
             return box;
           }
         });
@@ -431,8 +446,8 @@
         this.close();
       }
     },
-    onReady: function(){
-      if (this.get('type') === 'add'){
+    onReady: function() {
+      if (this.get('type') === 'add') {
         this.$el.find('.delete-group').addClass('hide');
       }
       this.$el.find('textarea').css('height', '200px');
