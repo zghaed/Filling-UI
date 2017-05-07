@@ -203,17 +203,6 @@
     ],
     useParentData: 'name',
     onReady: function() {
-      var theme = $('head link[rel="stylesheet"]').attr('href').split('/')[1];
-      app.remote({
-        url: 'api/test',
-        payload: {
-          less: this.get('css'),
-          theme: theme
-        }
-      }).done(function(data){
-        console.log(data);
-        $('head').append('<style>'+data.msg+'</style>');
-      });
       if (this.get('template') !== "") {
         var theTemplateScript = this.get('template'),
           inputData = this.get('data'),
@@ -263,6 +252,22 @@
           }
         })).popover($btn, {placement: 'top', bond: this, style: {width: '600px'}});
       }
+    },
+    onReady: function() {
+      var uniqueId = this.get('obj').name + '-' + this.get('obj').boxName + '-' + this.get('obj').groupNumber;
+      this.$el.attr('id', uniqueId);
+      var theme = $('head link[rel="stylesheet"]').attr('href').split('/')[1];
+      var less = '#' + uniqueId + '{' + this.get('obj').css + '}';
+      app.remote({
+        url: 'api/test',
+        payload: {
+          less: less,
+          theme: theme
+        }
+      }).done(function(data){
+        console.log(data);
+        $('head').append('<style>'+data.msg+'</style>');
+      });
     }
   });
 
@@ -288,7 +293,7 @@
         '<div class="row">',
           '<div class="form form-horizontal">',
             '<ul class="nav nav-tabs">',
-              '<li activate="single" tabId="html" class="active"><a>html</a></li>',
+              '<li activate="single" tabId="html"><a>html</a></li>',
               '<li activate="single" tabId="css"><a>css</a></li>',
             '</ul>',
             '<div region="tabs"></div>',
@@ -303,7 +308,7 @@
       '</div>'
     ],
     onItemActivated: function($item) {
-      //TODO: onItemActivated is not qorking with class="activate"
+      //TODO: onItemActivated is not working with class="activate"
       var tabId = $item.attr('tabId');
       this.tab('tabs', app.view({
         template: ['<div editor="code"></div>'],
@@ -338,7 +343,7 @@
     },
     actions: {
       submit: function() {
-        if (this.getViewIn('tabs').getViewIn('tab-html').$el.find('textarea').val() &&
+        if (this.getViewIn('tabs').$el.find('[region="tab-html"] [editor="code"] textarea').val() &&
           (this.getEditor('data').validate()===true)) {
           //HTML field is not empty
           var boxName = this.get('obj').boxName,
@@ -350,9 +355,9 @@
               return (box.boxName !== boxName || box.groupNumber !== groupNumber);
             });
             var editedObj = {
-              template:    this.getViewIn('tabs').getViewIn('tab-html').$el.find('textarea').val(),
+              template:    this.getViewIn('tabs').$el.find('[region="tab-html"] [editor="code"] textarea').val(),
               data:        this.getEditor('data').getVal(),
-              css:         this.getViewIn('tabs').getViewIn('tab-css').$el.find('textarea').val(),
+              css:         this.getViewIn('tabs').$el.find('[region="tab-css"] [editor="code"] textarea').val(),
               direction:   this.get('obj').direction,
               boxName:     boxName,
               groupNumber: groupNumber
@@ -363,7 +368,6 @@
             };
             var nameArray = this.get('obj').name.split('-');
             nameArray.shift();
-            var region = nameArray.join('-');
             var options = {
               newBoxes: newBoxes,
               name: this.get('obj').name,
@@ -375,9 +379,9 @@
           } else {
             //Adding an element
             var newObj = {
-              template:    this.getViewIn('tabs').getViewIn('tab-html').$el.find('textarea').val(),
+              template:    this.getViewIn('tabs').$el.find('[region="tab-html"] [editor="code"] textarea').val(),
               data:        this.getEditor('data').getVal(),
-              css:         this.getViewIn('tabs').getViewIn('tab-css').$el.find('textarea').val(),
+              css:         this.getViewIn('tabs').$el.find('[region="tab-css"] [editor="code"] textarea').val(),
               direction:   this.get('obj').direction,
               boxName:     boxName,
               groupNumber: groupNumber + 1
