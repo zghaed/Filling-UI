@@ -1,4 +1,5 @@
 ;(function(app) {
+
   app.view('Builder', {
     template: [
       '<div class="area hide" region="top-left-box"></div>',
@@ -8,8 +9,17 @@
     ],
     coop: ['update-data'],
     onUpdateData: function(options) {
-      if( options.name === this.$el.parent().attr('region')) {
-        this.set(options.newBoxes);
+      var nameArray = options.name.split('-');
+      nameArray.shift();
+      var region = nameArray.join('-');
+      if(region === this.$el.parent().attr('region')) {
+        var boxes =  _.filter(options.newBoxes.boxes, function(box) {
+          return box.boxName === options.box;
+        });
+        this.getViewIn(options.box).set({
+          name: options.name,
+          boxes: boxes
+        });
       }
     },
     onReady: function() {
@@ -41,7 +51,7 @@
       }, this));
     },
     onClose: function() {
-      console.log('closign');
+      console.log('closing...');
     }
   });
 
@@ -194,7 +204,6 @@
     useParentData: 'name',
     onReady: function() {
       var theme = $('head link[rel="stylesheet"]').attr('href').split('/')[1];
-      console.log('trying to test remote', theme);
       app.remote({
         url: 'api/test',
         payload: {
@@ -354,10 +363,11 @@
             };
             var nameArray = this.get('obj').name.split('-');
             nameArray.shift();
-            var name = nameArray.join('-');
+            var region = nameArray.join('-');
             var options = {
               newBoxes: newBoxes,
-              name: name
+              name: this.get('obj').name,
+              box: this.get('obj').boxName
             };
             app.store.set(this.get('obj').name, newBoxes);
             app.coop('update-data', options);
@@ -391,12 +401,10 @@
             var newData = {
               boxes: editedBoxes
             };
-            var addNameArray = this.get('obj').name.split('-');
-            addNameArray.shift();
-            var addName = addNameArray.join('-');
             var addOptions = {
               newBoxes: newData,
-              name: addName
+              name: this.get('obj').name,
+              box: this.get('obj').boxName
             };
             app.store.set(this.get('obj').name, newData);
             app.coop('update-data', addOptions);
@@ -434,12 +442,10 @@
         var newData = {
           boxes: deletedBoxes
         };
-        var nameArray = this.get('obj').name.split('-');
-        nameArray.shift();
-        var name = nameArray.join('-');
         var options = {
           newBoxes: newData,
-          name: name
+          name: this.get('obj').name,
+          box: this.get('obj').boxName
         };
         app.store.set(this.get('obj').name, newData);
         app.coop('update-data', options);
