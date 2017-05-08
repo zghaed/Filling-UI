@@ -1,4 +1,4 @@
-;(function(app) {
+ ;(function(app) {
 
   app.view('Builder', {
     template: [
@@ -51,7 +51,7 @@
       }, this));
     },
     onClose: function() {
-      console.log('closing...');
+      $('[id^='+this.get('name')+']').remove();
     }
   });
 
@@ -266,7 +266,9 @@
         }
       }).done(function(data){
         console.log(data);
-        $('head').append('<style>'+data.msg+'</style>');
+        var uniqueCSS = uniqueId + '-css';
+        $('#' +  uniqueCSS).remove();
+        $('head').append('<style id="' + uniqueCSS + '">' + data.msg + '</style>');
       });
     }
   });
@@ -452,6 +454,8 @@
           box: this.get('obj').boxName
         };
         app.store.set(this.get('obj').name, newData);
+        var cssId = this.get('obj').name + '-' + this.get('obj').boxName + '-' + this.get('obj').groupNumber + '-css';
+        $('#' + cssId).remove();
         app.coop('update-data', options);
         this.close();
       }
