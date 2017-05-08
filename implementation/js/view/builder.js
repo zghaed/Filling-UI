@@ -355,7 +355,7 @@
     },
     actions: {
       submit: function() {
-        if (!this.getViewIn('tabs').getViewIn('tab-html').getEditor('code').validate() &&
+        if (this.getViewIn('tabs').$el.find('[region="tab-html"] [editor="code"] textarea').val() &&
           (this.getEditor('data').validate()===true)) {
           //HTML field is not empty
           var boxName = this.get('obj').boxName,
@@ -367,9 +367,9 @@
                 return (box.boxName !== boxName || box.groupNumber !== groupNumber);
               });
             var editedObj = {
-              template:    this.getViewIn('tabs').getViewIn('tab-html').getEditor('code').getVal(),
+              template:    this.getViewIn('tabs').$el.find('[region="tab-html"] [editor="code"] textarea').val(),
               data:        this.getEditor('data').getVal(),
-              css:         this.getViewIn('tabs').getViewIn('tab-css').getEditor('code').getVal(),
+              css:         this.getViewIn('tabs').$el.find('[region="tab-css"] [editor="code"] textarea').val(),
               direction:   this.get('obj').direction,
               boxName:     boxName,
               groupNumber: groupNumber
@@ -389,9 +389,9 @@
           } else {
             //Adding an element
             var newObj = {
-              template:    this.getViewIn('tabs').getViewIn('tab-html').getEditor('code').getVal(),
+              template:    this.getViewIn('tabs').$el.find('[region="tab-html"] [editor="code"] textarea').val(),
               data:        this.getEditor('data').getVal(),
-              css:         this.getViewIn('tabs').getViewIn('tab-css').getEditor('code').getVal(),
+              css:         this.getViewIn('tabs').$el.find('[region="tab-css"] [editor="code"] textarea').val(),
               direction:   this.get('obj').direction,
               boxName:     boxName,
               groupNumber: groupNumber + 1
@@ -425,7 +425,8 @@
             this.close();
           }
         } else {
-          this.getViewIn('tabs').getViewIn('tab-html').getEditor('code').validate(true);
+          //TODO: Why this is undefined?
+      //    this.getViewIn('tabs').getViewIn('tab-html').getEditor('code').validate(true);
           this.getEditor('data').validate(true);
         }
       },
