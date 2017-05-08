@@ -255,31 +255,36 @@
     },
     onReady: function() {
       var uniqueId = this.get('obj').name + '-' + this.get('obj').boxName + '-' + this.get('obj').groupNumber;
-      this.$el.attr('id', uniqueId);
-      var theme = $('head link[rel="stylesheet"]').attr('href').split('/')[1];
-      var less = '#' + uniqueId + '{' + this.get('obj').css + '}';
-      var self = this;
-      app.remote({
-        url: 'api/test',
-        payload: {
-          less: less,
-          theme: theme
-        }
-      }).done(function(data) {
-        //TODO: Lock the region
-        // if (self.flag === undefined) {
-        //   self.flag = false;
-        // }
-        // self.flag = !self.flag;
-        // var nameArray = self.get('obj').name.split('-');
-        // nameArray.shift();
-        // var region = nameArray.join('-');
-        // self.lock(region, self.flag, 'fa fa-spinner fa-spin fa-3x');
-        console.log(data);
+      if (this.get('obj').css) {
+        this.$el.attr('id', uniqueId);
+        var theme = $('head link[rel="stylesheet"]').attr('href').split('/')[1];
+        var less = '#' + uniqueId + '{' + this.get('obj').css + '}';
+        var self = this;
+        app.remote({
+          url: 'api/test',
+          payload: {
+            less: less,
+            theme: theme
+          }
+        }).done(function(data) {
+          //TODO: Lock the region
+          // if (self.flag === undefined) {
+          //   self.flag = false;
+          // }
+          // self.flag = !self.flag;
+          // var nameArray = self.get('obj').name.split('-');
+          // nameArray.shift();
+          // var region = nameArray.join('-');
+          // self.lock(region, self.flag, 'fa fa-spinner fa-spin fa-3x');
+          console.log(data);
+          var uniqueCSS = uniqueId + '-css';
+          $('#' +  uniqueCSS).remove();
+          $('head').append('<style id="' + uniqueCSS + '">' + data.msg + '</style>');
+        });
+      } else {
         var uniqueCSS = uniqueId + '-css';
         $('#' +  uniqueCSS).remove();
-        $('head').append('<style id="' + uniqueCSS + '">' + data.msg + '</style>');
-      });
+      }
     }
   });
 
@@ -336,7 +341,6 @@
           }
         }
       }), tabId);
-      this.$el.find('textarea').css('height', '200px');
     },
     editors: {
       data: {
@@ -466,24 +470,26 @@
       }
     },
     onReady: function() {
-      console.log('finding html tab ', this.$el.find('[tabId="html"]'));
       this.$el.find('[tabId="html"]').addClass('active');
-      var tabId = 'html';
-      this.tab('tabs', app.view({
-        template: ['<div editor="code"></div>'],
-        useParentData: tabId,
-        editors: {
-          code: {
-            value: this.get(tabId),
-            label: tabId,
-            type: 'textarea',
-            placeholder: tabId,
-            validate: {
-              required: true
+      var tabIds = ['css', 'html'];
+      var self = this;
+      _.map(tabIds, function(tabId) {
+        self.tab('tabs', app.view({
+          template: ['<div editor="code"></div>'],
+          useParentData: tabId,
+          editors: {
+            code: {
+              value: self.get(tabId),
+              label: tabId,
+              type: 'textarea',
+              placeholder: tabId,
+              validate: {
+                required: true
+              }
             }
           }
-        }
-      }), tabId);
+        }), tabId);
+      });
       if (this.get('type') === 'add') {
         this.$el.find('.delete-group').addClass('hide');
       }
