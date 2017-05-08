@@ -237,7 +237,7 @@
 
   var Content = app.view({
     template: [
-      '<div action-click="edit-element">{{{element}}}</div>'
+      '<div region="view-lock" action-click="edit-element">{{{element}}}</div>'
     ],
     actions: {
       'edit-element': function($btn) {
@@ -260,6 +260,11 @@
         var theme = $('head link[rel="stylesheet"]').attr('href').split('/')[1];
         var less = '#' + uniqueId + '{' + this.get('obj').css + '}';
         var self = this;
+        if (self.flag === undefined) {
+          self.flag = true;
+        }
+        self.lock('view-lock', self.flag, 'fa fa-spinner fa-spin fa-3x');
+        self.flag = !self.flag;
         app.remote({
           url: 'api/test',
           payload: {
@@ -267,16 +272,7 @@
             theme: theme
           }
         }).done(function(data) {
-          //TODO: Lock the region
-          // if (self.flag === undefined) {
-          //   self.flag = false;
-          // }
-          // self.flag = !self.flag;
-          // var nameArray = self.get('obj').name.split('-');
-          // nameArray.shift();
-          // var region = nameArray.join('-');
-          // self.lock(region, self.flag, 'fa fa-spinner fa-spin fa-3x');
-          console.log(data);
+          self.lock('view-lock', self.flag, 'fa fa-spinner fa-spin fa-3x');
           var uniqueCSS = uniqueId + '-css';
           $('#' +  uniqueCSS).remove();
           $('head').append('<style id="' + uniqueCSS + '">' + data.msg + '</style>');
