@@ -20,3 +20,6 @@ bower_components/
 
 #npm
 node_modules/
+
+#ESlint
+.eslintrc.json

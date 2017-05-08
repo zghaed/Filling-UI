@@ -47,8 +47,8 @@
           }));
         }),
        'ready', _.bind(function(boxes) {
-        this.trigger('view:box-ready');
-      }, this));
+         this.trigger('view:box-ready');
+       }, this));
     },
     onClose: function() {
       $('[id^='+this.get('name')+']').remove();
@@ -140,7 +140,7 @@
       },
       'toggle-preview': function() {
         if(this._preview === undefined)
-           this._preview = false;
+          this._preview = false;
         var currentBuilder = this.$el.parent().parent();
         this._preview = !this._preview;
 
@@ -203,10 +203,10 @@
     ],
     useParentData: 'name',
     onReady: function() {
-      if (this.get('template') !== "") {
+      if (this.get('template') !== '') {
         var theTemplateScript = this.get('template'),
           inputData = this.get('data'),
-          jsonData = (inputData === "") ? "" : JSON.parse(inputData),
+          jsonData = (inputData === '') ? '' : JSON.parse(inputData),
           preCompiledTemplateScript;
         if (Array.isArray(jsonData)) {
           preCompiledTemplateScript = '{{#each .}}' + theTemplateScript + '{{/each}}';
@@ -291,9 +291,9 @@
     actions: {
       'add-element': function($btn) {
         (new PopOver({
-        data: {
-          type: 'add',
-          obj: this.get('obj')
+          data: {
+            type: 'add',
+            obj: this.get('obj')
           }
         })).popover($btn, {placement: 'top', bond: this, style: {width: '600px'}});
       }
@@ -303,21 +303,21 @@
   var PopOver = app.view({
     template: [
       '<div class="col-md-12">',
-        '<div class="row">',
-          '<div class="form form-horizontal">',
-            '<ul class="nav nav-tabs">',
-              '<li activate="single" tabId="html"><a>html</a></li>',
-              '<li activate="single" tabId="css"><a>css</a></li>',
-            '</ul>',
-            '<div region="tabs"></div>',
-            '<div editor="data"></div>',
-          '</div>',
-        '</div>',
+      '<div class="row">',
+      '<div class="form form-horizontal">',
+      '<ul class="nav nav-tabs">',
+      '<li activate="single" tabId="html"><a>html</a></li>',
+      '<li activate="single" tabId="css"><a>css</a></li>',
+      '</ul>',
+      '<div region="tabs"></div>',
+      '<div editor="data"></div>',
+      '</div>',
+      '</div>',
       '</div>',
       '<div class="row">',
-        '<span class="btn btn-primary" action-click="submit">Submit</span>',
-        '<span class="btn btn-info btn-outline" action-click="cancel">Cancel</span>',
-        '<span class="btn btn-danger delete-group" action-click="delete">Delete</span>',
+      '<span class="btn btn-primary" action-click="submit">Submit</span>',
+      '<span class="btn btn-info btn-outline" action-click="cancel">Cancel</span>',
+      '<span class="btn btn-danger delete-group" action-click="delete">Delete</span>',
       '</div>'
     ],
     onItemActivated: function($item) {
@@ -346,10 +346,10 @@
         validate: function(val) {
           try {
             if(val) JSON.parse(val);
-           } catch (e) {
+          } catch (e) {
             return 'Data needs to be in JSON format';
-           }
-           return true;
+          }
+          return true;
         }
       }
     },
@@ -364,8 +364,8 @@
             //Editing an element
             var boxes = app.store.get(this.get('obj').name).boxes,
               rest = _.filter(boxes, function(box) {
-              return (box.boxName !== boxName || box.groupNumber !== groupNumber);
-            });
+                return (box.boxName !== boxName || box.groupNumber !== groupNumber);
+              });
             var editedObj = {
               template:    this.getViewIn('tabs').getViewIn('tab-html').getEditor('code').getVal(),
               data:        this.getEditor('data').getVal(),
