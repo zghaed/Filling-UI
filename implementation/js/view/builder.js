@@ -1,4 +1,4 @@
- ;(function(app) {
+;(function(app) {
 
   app.view('Builder', {
     template: [
@@ -258,13 +258,23 @@
       this.$el.attr('id', uniqueId);
       var theme = $('head link[rel="stylesheet"]').attr('href').split('/')[1];
       var less = '#' + uniqueId + '{' + this.get('obj').css + '}';
+      var self = this;
       app.remote({
         url: 'api/test',
         payload: {
           less: less,
           theme: theme
         }
-      }).done(function(data){
+      }).done(function(data) {
+        //TODO: Lock the region
+        // if (self.flag === undefined) {
+        //   self.flag = false;
+        // }
+        // self.flag = !self.flag;
+        // var nameArray = self.get('obj').name.split('-');
+        // nameArray.shift();
+        // var region = nameArray.join('-');
+        // self.lock(region, self.flag, 'fa fa-spinner fa-spin fa-3x');
         console.log(data);
         var uniqueCSS = uniqueId + '-css';
         $('#' +  uniqueCSS).remove();
@@ -310,7 +320,6 @@
       '</div>'
     ],
     onItemActivated: function($item) {
-      //TODO: onItemActivated is not working with class="activate"
       var tabId = $item.attr('tabId');
       this.tab('tabs', app.view({
         template: ['<div editor="code"></div>'],
@@ -327,6 +336,7 @@
           }
         }
       }), tabId);
+      this.$el.find('textarea').css('height', '200px');
     },
     editors: {
       data: {
@@ -345,7 +355,7 @@
     },
     actions: {
       submit: function() {
-        if (this.getViewIn('tabs').$el.find('[region="tab-html"] [editor="code"] textarea').val() &&
+        if (!this.getViewIn('tabs').getViewIn('tab-html').getEditor('code').validate() &&
           (this.getEditor('data').validate()===true)) {
           //HTML field is not empty
           var boxName = this.get('obj').boxName,
@@ -357,9 +367,9 @@
               return (box.boxName !== boxName || box.groupNumber !== groupNumber);
             });
             var editedObj = {
-              template:    this.getViewIn('tabs').$el.find('[region="tab-html"] [editor="code"] textarea').val(),
+              template:    this.getViewIn('tabs').getViewIn('tab-html').getEditor('code').getVal(),
               data:        this.getEditor('data').getVal(),
-              css:         this.getViewIn('tabs').$el.find('[region="tab-css"] [editor="code"] textarea').val(),
+              css:         this.getViewIn('tabs').getViewIn('tab-css').getEditor('code').getVal(),
               direction:   this.get('obj').direction,
               boxName:     boxName,
               groupNumber: groupNumber
@@ -368,8 +378,6 @@
             var newBoxes = {
               boxes: rest
             };
-            var nameArray = this.get('obj').name.split('-');
-            nameArray.shift();
             var options = {
               newBoxes: newBoxes,
               name: this.get('obj').name,
@@ -381,9 +389,9 @@
           } else {
             //Adding an element
             var newObj = {
-              template:    this.getViewIn('tabs').$el.find('[region="tab-html"] [editor="code"] textarea').val(),
+              template:    this.getViewIn('tabs').getViewIn('tab-html').getEditor('code').getVal(),
               data:        this.getEditor('data').getVal(),
-              css:         this.getViewIn('tabs').$el.find('[region="tab-css"] [editor="code"] textarea').val(),
+              css:         this.getViewIn('tabs').getViewIn('tab-css').getEditor('code').getVal(),
               direction:   this.get('obj').direction,
               boxName:     boxName,
               groupNumber: groupNumber + 1
@@ -417,10 +425,7 @@
             this.close();
           }
         } else {
-          //HTML field is empty
-          //TODO: access to html editor and it's validation
-          //this.getViewIn('tabs').getViewIn('tab-html').getEditor('html').validate(true);
-          //this.getEditor('html').validate(true);
+          this.getViewIn('tabs').getViewIn('tab-html').getEditor('code').validate(true);
           this.getEditor('data').validate(true);
         }
       },
@@ -461,6 +466,24 @@
       }
     },
     onReady: function() {
+      console.log('finding html tab ', this.$el.find('[tabId="html"]'));
+      this.$el.find('[tabId="html"]').addClass('active');
+      var tabId = 'html';
+      this.tab('tabs', app.view({
+        template: ['<div editor="code"></div>'],
+        useParentData: tabId,
+        editors: {
+          code: {
+            value: this.get(tabId),
+            label: tabId,
+            type: 'textarea',
+            placeholder: tabId,
+            validate: {
+              required: true
+            }
+          }
+        }
+      }), tabId);
       if (this.get('type') === 'add') {
         this.$el.find('.delete-group').addClass('hide');
       }
