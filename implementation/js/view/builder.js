@@ -13,9 +13,6 @@
       nameArray.shift();
       var region = nameArray.join('-');
       if(region === this.$el.parent().attr('region')) {
-        // var boxes =  _.filter(options.newBoxes.boxes, function(box) {
-        //   return box.boxName === options.box;
-        // });
         this.getViewIn(options.box).set({
           name: options.name,
           boxes: options.newBoxes
@@ -41,9 +38,6 @@
             data: {
               name: self.get('name'),
               boxes: boxes[name]
-              // _.filter(boxes, function(box) {
-              //   return box.boxName === name;
-              // })
             }
           }));
         }),
@@ -107,8 +101,9 @@
             });
           }
         }
-        var arrayBoxes = app.store.get(this.get('name')).boxes;
-        var editedBoxes = _.map(arrayBoxes, function(box) {
+        var allBoxes = app.store.get(this.get('name')),
+          regionBoxes = allBoxes[boxName],
+          editedBoxes = _.map(regionBoxes, function(box) {
           if (box.boxName === boxName) {
             return {
               template:    box.template,
@@ -122,10 +117,8 @@
             return box;
           }
         });
-        var newData = {
-          boxes: editedBoxes
-        };
-        app.store.set(this.get('name'), newData);
+        allBoxes[boxName] = editedBoxes;
+        app.store.set(this.get('name'), allBoxes);
       },
       'toggle-top-left': function() {
         this.$el.parent().parent().children('.region-top-left-box').toggleClass('hide');
@@ -364,8 +357,8 @@
           if (this.get('type') === 'edit') {
             //Editing an element
             var allBoxes = app.store.get(this.get('obj').name),
-              editBoxes = app.store.get(this.get('obj').name)[boxName],
-              rest = _.filter(editBoxes, function(box) {
+              editRegionBoxes = app.store.get(this.get('obj').name)[boxName],
+              rest = _.filter(editRegionBoxes, function(box) {
                 return (box.groupNumber !== groupNumber);
               });
             var editedObj = {
@@ -378,9 +371,6 @@
             };
             rest.push(editedObj);
             allBoxes[boxName] = rest;
-            // var newBoxes = {
-            //   boxes: rest
-            // };
             var options = {
               newBoxes: allBoxes[boxName],
               name: this.get('obj').name,
@@ -400,8 +390,8 @@
               groupNumber: groupNumber + 1
             };
             var cacheData = app.store.get(this.get('obj').name),
-              addBoxes = cacheData[this.get('obj').boxName],
-              editedBoxes = _.map(addBoxes, function(box) {
+              addRegionBoxes = cacheData[this.get('obj').boxName],
+              editedBoxes = _.map(addRegionBoxes, function(box) {
               if (box.groupNumber <= groupNumber) {
                 return box;
               } else {
@@ -442,8 +432,10 @@
           template    = this.get('obj').template,
           data        = this.get('obj').data,
           css         = this.get('obj').css;
-        var arrayBoxes = app.store.get(this.get('obj').name).boxes;
-        var deletedBoxes = _.filter(arrayBoxes, function(box) {
+
+        var cacheData = app.store.get(this.get('obj').name),
+          deleteRegionBoxes = cacheData[boxName],
+          deletedBoxes = _.filter(deleteRegionBoxes, function(box) {
           if (!(box.groupNumber === groupNumber &&
                 box.boxName     === boxName &&
                 box.direction   === direction &&
@@ -453,16 +445,14 @@
             return box;
           }
         });
-        var newData = {
-          boxes: deletedBoxes
-        };
+        cacheData[boxName] = deletedBoxes;
         var options = {
-          newBoxes: newData,
+          newBoxes: cacheData[boxName],
           name: this.get('obj').name,
-          box: this.get('obj').boxName
+          box: boxName
         };
-        app.store.set(this.get('obj').name, newData);
-        var cssId = this.get('obj').name + '-' + this.get('obj').boxName + '-' + this.get('obj').groupNumber + '-css';
+        app.store.set(this.get('obj').name, cacheData);
+        var cssId = this.get('obj').name + '-' + boxName + '-' + groupNumber + '-css';
         $('#' + cssId).remove();
         app.coop('update-data', options);
         this.close();
