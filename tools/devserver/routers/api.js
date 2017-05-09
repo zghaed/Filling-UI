@@ -32,9 +32,8 @@ module.exports = function(server){
           console.log('LESS compile error\n', error);
           return;
         }
-
-          console.log(output.css);
-          return res.status(200).json({msg: output.css});
+        //console.log(output.css);
+        return res.status(200).json({msg: output.css});
       });
 
 

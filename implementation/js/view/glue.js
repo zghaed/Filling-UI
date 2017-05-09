@@ -24,13 +24,13 @@
           });
           app.store.set(cacheName, app.store.get(cacheName) || {
             'top-left-box':
-              [{"template": "", "data":"", "css":"", "direction":"h", "boxName":"top-left-box", "groupNumber":0}],
+              [{"template": "", "data":"", "css":"", "direction":"h", "groupNumber":0}],
             'top-right-box':
-              [{"template": "", "data":"", "css":"", "direction":"h", "boxName":"top-right-box", "groupNumber":0}],
+              [{"template": "", "data":"", "css":"", "direction":"h", "groupNumber":0}],
             'middle-box':
-              [{"template": "", "data":"", "css":"", "direction":"v", "boxName":"middle-box", "groupNumber":0}],
+              [{"template": "", "data":"", "css":"", "direction":"v", "groupNumber":0}],
             'bottom-right-box':
-              [{"template": "", "data":"", "css":"", "direction":"h", "boxName":"bottom-right-box", "groupNumber":0}]
+              [{"template": "", "data":"", "css":"", "direction":"h", "groupNumber":0}]
           });
           this.spray(target, builder);
         }
@@ -65,13 +65,13 @@
           });
           app.store.set(key, app.store.get(key) || {
             'top-left-box':
-              [{"template": "", "data":"", "css":"", "direction":"h", "boxName":"top-left-box", "groupNumber":0}],
+              [{"template": "", "data":"", "css":"", "direction":"h", "groupNumber":0}],
             'top-right-box':
-              [{"template": "", "data":"", "css":"", "direction":"h", "boxName":"top-right-box", "groupNumber":0}],
+              [{"template": "", "data":"", "css":"", "direction":"h", "groupNumber":0}],
             'middle-box':
-              [{"template": "", "data":"", "css":"", "direction":"v", "boxName":"middle-box", "groupNumber":0}],
+              [{"template": "", "data":"", "css":"", "direction":"v", "groupNumber":0}],
             'bottom-right-box':
-              [{"template": "", "data":"", "css":"", "direction":"h", "boxName":"bottom-right-box", "groupNumber":0}]
+              [{"template": "", "data":"", "css":"", "direction":"h", "groupNumber":0}]
           });
           var nameArray = key.split('-');
           nameArray.shift();

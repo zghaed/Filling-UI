@@ -9,11 +9,14 @@
     ],
     coop: ['update-data'],
     onUpdateData: function(options) {
-      var nameArray = options.name.split('-');
+      var name = options.name.split('/'),
+        boxName = name.pop(),
+        ViewAndRegion = name[0],
+        nameArray = ViewAndRegion.split('-');
       nameArray.shift();
       var region = nameArray.join('-');
       if(region === this.$el.parent().attr('region')) {
-        this.getViewIn(options.box).set({
+        this.getViewIn(boxName).set({
           name: options.name,
           boxes: options.newBoxes
         });
@@ -36,7 +39,7 @@
         _.map(regionNames, function(name) {
           return (self.show(name, Box, {
             data: {
-              name: self.get('name'),
+              name: self.get('name') + '/' + name,
               boxes: boxes[name]
             }
           }));
@@ -101,24 +104,21 @@
             });
           }
         }
-        var allBoxes = app.store.get(this.get('name')),
+        var name = this.get('name').split('/'),
+          viewAndRegion = name[0],
+          allBoxes = app.store.get(viewAndRegion),
           regionBoxes = allBoxes[boxName],
           editedBoxes = _.map(regionBoxes, function(box) {
-          if (box.boxName === boxName) {
             return {
               template:    box.template,
               data:        box.data,
               css:				 box.css,
               direction:   currenctDirection,
-              boxName:     box.boxName,
               groupNumber: box.groupNumber
             };
-          } else {
-            return box;
-          }
-        });
+          });
         allBoxes[boxName] = editedBoxes;
-        app.store.set(this.get('name'), allBoxes);
+        app.store.set(viewAndRegion, allBoxes);
       },
       'toggle-top-left': function() {
         this.$el.parent().parent().children('.region-top-left-box').toggleClass('hide');
@@ -137,7 +137,6 @@
           this._preview = false;
         var currentBuilder = this.$el.parent().parent();
         this._preview = !this._preview;
-
         currentBuilder.find('[action-click="edit-element"]').toggleClass('toggle-pointer', this._preview);
         currentBuilder.find('.add-button').toggleClass('toggle-preview', this._preview);
         currentBuilder.find('.direction').toggleClass('toggle-preview', this._preview);
@@ -248,7 +247,10 @@
       }
     },
     onReady: function() {
-      var uniqueId = this.get('obj').name + '-' + this.get('obj').boxName + '-' + this.get('obj').groupNumber;
+      var name  = this.get('obj').name.split('/'),
+        boxName = name.pop(),
+        viewAndRegion = name[0],
+        uniqueId = viewAndRegion + '-' + boxName + '-' + this.get('obj').groupNumber;
       if (this.get('obj').css) {
         this.$el.attr('id', uniqueId);
         var theme = $('head link[rel="stylesheet"]').attr('href').split('/')[1];
@@ -352,12 +354,15 @@
         if (this.getViewIn('tabs').$el.find('[region="tab-html"] [editor="code"] textarea').val() &&
           (this.getEditor('data').validate()===true)) {
           //HTML field is not empty
-          var boxName = this.get('obj').boxName,
-            groupNumber = this.get('obj').groupNumber;
+          var obj = this.get('obj'),
+            arrayName = obj.name.split('/'),
+            boxName = arrayName.pop(),
+            viewAndRegion = arrayName[0],
+            groupNumber = obj.groupNumber;
           if (this.get('type') === 'edit') {
             //Editing an element
-            var allBoxes = app.store.get(this.get('obj').name),
-              editRegionBoxes = app.store.get(this.get('obj').name)[boxName],
+            var allBoxes = app.store.get(viewAndRegion),
+              editRegionBoxes = allBoxes[boxName],
               rest = _.filter(editRegionBoxes, function(box) {
                 return (box.groupNumber !== groupNumber);
               });
@@ -365,18 +370,16 @@
               template:    this.getViewIn('tabs').$el.find('[region="tab-html"] [editor="code"] textarea').val(),
               data:        this.getEditor('data').getVal(),
               css:         this.getViewIn('tabs').$el.find('[region="tab-css"] [editor="code"] textarea').val(),
-              direction:   this.get('obj').direction,
-              boxName:     boxName,
+              direction:   obj.direction,
               groupNumber: groupNumber
             };
             rest.push(editedObj);
             allBoxes[boxName] = rest;
             var options = {
               newBoxes: allBoxes[boxName],
-              name: this.get('obj').name,
-              box: this.get('obj').boxName
+              name: obj.name
             };
-            app.store.set(this.get('obj').name, allBoxes);
+            app.store.set(viewAndRegion, allBoxes);
             app.coop('update-data', options);
             this.close();
           } else {
@@ -385,12 +388,11 @@
               template:    this.getViewIn('tabs').$el.find('[region="tab-html"] [editor="code"] textarea').val(),
               data:        this.getEditor('data').getVal(),
               css:         this.getViewIn('tabs').$el.find('[region="tab-css"] [editor="code"] textarea').val(),
-              direction:   this.get('obj').direction,
-              boxName:     boxName,
+              direction:   obj.direction,
               groupNumber: groupNumber + 1
             };
-            var cacheData = app.store.get(this.get('obj').name),
-              addRegionBoxes = cacheData[this.get('obj').boxName],
+            var cacheData = app.store.get(viewAndRegion),
+              addRegionBoxes = cacheData[boxName],
               editedBoxes = _.map(addRegionBoxes, function(box) {
               if (box.groupNumber <= groupNumber) {
                 return box;
@@ -406,13 +408,12 @@
               }
             });
             editedBoxes.push(newObj);
-            cacheData[this.get('obj').boxName] = editedBoxes;
+            cacheData[boxName] = editedBoxes;
             var addOptions = {
-              newBoxes: cacheData[this.get('obj').boxName],
-              name: this.get('obj').name,
-              box: this.get('obj').boxName
+              newBoxes: cacheData[boxName],
+              name: obj.name
             };
-            app.store.set(this.get('obj').name, cacheData);
+            app.store.set(viewAndRegion, cacheData);
             app.coop('update-data', addOptions);
             this.close();
           }
@@ -426,18 +427,20 @@
         this.close();
       },
       delete: function() {
-        var boxName   = this.get('obj').boxName,
-          groupNumber = this.get('obj').groupNumber,
-          direction   = this.get('obj').direction,
-          template    = this.get('obj').template,
-          data        = this.get('obj').data,
-          css         = this.get('obj').css;
-
-        var cacheData = app.store.get(this.get('obj').name),
+        var obj = this.get('obj'),
+          name = obj.name,
+          nameArray = name.split('/'),
+          boxName = nameArray.pop(),
+          viewAndRegion = nameArray[0],
+          groupNumber = obj.groupNumber,
+          direction = obj.direction,
+          template = obj.template,
+          data = obj.data,
+          css = obj.css,
+          cacheData = app.store.get(viewAndRegion),
           deleteRegionBoxes = cacheData[boxName],
           deletedBoxes = _.filter(deleteRegionBoxes, function(box) {
           if (!(box.groupNumber === groupNumber &&
-                box.boxName     === boxName &&
                 box.direction   === direction &&
                 box.template    === template &&
                 box.data        === data &&
@@ -448,11 +451,10 @@
         cacheData[boxName] = deletedBoxes;
         var options = {
           newBoxes: cacheData[boxName],
-          name: this.get('obj').name,
-          box: boxName
+          name: name
         };
-        app.store.set(this.get('obj').name, cacheData);
-        var cssId = this.get('obj').name + '-' + boxName + '-' + groupNumber + '-css';
+        app.store.set(viewAndRegion, cacheData);
+        var cssId = viewAndRegion + '-' + boxName + '-' + groupNumber + '-css';
         $('#' + cssId).remove();
         app.coop('update-data', options);
         this.close();
