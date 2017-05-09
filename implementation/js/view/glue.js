@@ -23,13 +23,14 @@
              }
           });
           app.store.set(cacheName, app.store.get(cacheName) || {
-            boxes:
-            [
-              {"template": "", "data":"", "css":"", "direction":"h", "boxName":"top-left-box",     "groupNumber":0},
-              {"template": "", "data":"", "css":"", "direction":"h", "boxName":"top-right-box",    "groupNumber":0},
-              {"template": "", "data":"", "css":"", "direction":"v", "boxName":"middle-box",       "groupNumber":0},
-              {"template": "", "data":"", "css":"", "direction":"h", "boxName":"bottom-right-box", "groupNumber":0}
-            ]
+            'top-left-box':
+              [{"template": "", "data":"", "css":"", "direction":"h", "boxName":"top-left-box", "groupNumber":0}],
+            'top-right-box':
+              [{"template": "", "data":"", "css":"", "direction":"h", "boxName":"top-right-box", "groupNumber":0}],
+            'middle-box':
+              [{"template": "", "data":"", "css":"", "direction":"v", "boxName":"middle-box", "groupNumber":0}],
+            'bottom-right-box':
+              [{"template": "", "data":"", "css":"", "direction":"h", "boxName":"bottom-right-box", "groupNumber":0}]
           });
           this.spray(target, builder);
         }
@@ -40,10 +41,15 @@
         var caches = app.store.getAll();
         var keys = [];
         var viewName = this.getViewIn('glue-region').name;
+        var regionNames = ['top-left-box', 'top-right-box', 'middle-box', 'bottom-right-box'];
         _.each(caches, function(val, key) {
           var keyArray = key.split('-');
           if (keyArray[0] === viewName) {
-            if(val.boxes.length < 5) {
+            var groups = 0;
+            _.each(regionNames, function(region) {
+              groups += caches[key][region].length;
+            });
+            if(groups < 5) {
               app.store.set(key);
             } else {
               keys.push(key);
@@ -58,13 +64,14 @@
              }
           });
           app.store.set(key, app.store.get(key) || {
-            boxes:
-            [
-              {"template": "", "data":"", "css":"", "direction":"h", "boxName":"top-left-box",     "groupNumber":0},
-              {"template": "", "data":"", "css":"", "direction":"h", "boxName":"top-right-box",    "groupNumber":0},
-              {"template": "", "data":"", "css":"", "direction":"v", "boxName":"middle-box",       "groupNumber":0},
-              {"template": "", "data":"", "css":"", "direction":"h", "boxName":"bottom-right-box", "groupNumber":0}
-            ]
+            'top-left-box':
+              [{"template": "", "data":"", "css":"", "direction":"h", "boxName":"top-left-box", "groupNumber":0}],
+            'top-right-box':
+              [{"template": "", "data":"", "css":"", "direction":"h", "boxName":"top-right-box", "groupNumber":0}],
+            'middle-box':
+              [{"template": "", "data":"", "css":"", "direction":"v", "boxName":"middle-box", "groupNumber":0}],
+            'bottom-right-box':
+              [{"template": "", "data":"", "css":"", "direction":"h", "boxName":"bottom-right-box", "groupNumber":0}]
           });
           var nameArray = key.split('-');
           nameArray.shift();

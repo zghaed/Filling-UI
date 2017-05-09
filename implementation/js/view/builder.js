@@ -13,17 +13,17 @@
       nameArray.shift();
       var region = nameArray.join('-');
       if(region === this.$el.parent().attr('region')) {
-        var boxes =  _.filter(options.newBoxes.boxes, function(box) {
-          return box.boxName === options.box;
-        });
+        // var boxes =  _.filter(options.newBoxes.boxes, function(box) {
+        //   return box.boxName === options.box;
+        // });
         this.getViewIn(options.box).set({
           name: options.name,
-          boxes: boxes
+          boxes: options.newBoxes
         });
       }
     },
     onReady: function() {
-      var boxes = app.store.get(this.get('name')).boxes;
+      var boxes = app.store.get(this.get('name'));
       this.$el.css({
         'padding': '1em',
         'display': 'flex',
@@ -40,9 +40,10 @@
           return (self.show(name, Box, {
             data: {
               name: self.get('name'),
-              boxes: _.filter(boxes, function(box) {
-                return box.boxName === name;
-              })
+              boxes: boxes[name]
+              // _.filter(boxes, function(box) {
+              //   return box.boxName === name;
+              // })
             }
           }));
         }),
@@ -362,9 +363,10 @@
             groupNumber = this.get('obj').groupNumber;
           if (this.get('type') === 'edit') {
             //Editing an element
-            var boxes = app.store.get(this.get('obj').name).boxes,
-              rest = _.filter(boxes, function(box) {
-                return (box.boxName !== boxName || box.groupNumber !== groupNumber);
+            var allBoxes = app.store.get(this.get('obj').name),
+              editBoxes = app.store.get(this.get('obj').name)[boxName],
+              rest = _.filter(editBoxes, function(box) {
+                return (box.groupNumber !== groupNumber);
               });
             var editedObj = {
               template:    this.getViewIn('tabs').$el.find('[region="tab-html"] [editor="code"] textarea').val(),
@@ -375,15 +377,16 @@
               groupNumber: groupNumber
             };
             rest.push(editedObj);
-            var newBoxes = {
-              boxes: rest
-            };
+            allBoxes[boxName] = rest;
+            // var newBoxes = {
+            //   boxes: rest
+            // };
             var options = {
-              newBoxes: newBoxes,
+              newBoxes: allBoxes[boxName],
               name: this.get('obj').name,
               box: this.get('obj').boxName
             };
-            app.store.set(this.get('obj').name, newBoxes);
+            app.store.set(this.get('obj').name, allBoxes);
             app.coop('update-data', options);
             this.close();
           } else {
@@ -396,8 +399,9 @@
               boxName:     boxName,
               groupNumber: groupNumber + 1
             };
-            var arrayBoxes = app.store.get(this.get('obj').name).boxes;
-            var editedBoxes = _.map(arrayBoxes, function(box) {
+            var cacheData = app.store.get(this.get('obj').name),
+              addBoxes = cacheData[this.get('obj').boxName],
+              editedBoxes = _.map(addBoxes, function(box) {
               if (box.groupNumber <= groupNumber) {
                 return box;
               } else {
@@ -412,21 +416,19 @@
               }
             });
             editedBoxes.push(newObj);
-            var newData = {
-              boxes: editedBoxes
-            };
+            cacheData[this.get('obj').boxName] = editedBoxes;
             var addOptions = {
-              newBoxes: newData,
+              newBoxes: cacheData[this.get('obj').boxName],
               name: this.get('obj').name,
               box: this.get('obj').boxName
             };
-            app.store.set(this.get('obj').name, newData);
+            app.store.set(this.get('obj').name, cacheData);
             app.coop('update-data', addOptions);
             this.close();
           }
         } else {
           //TODO: Why this is undefined?
-      //    this.getViewIn('tabs').getViewIn('tab-html').getEditor('code').validate(true);
+          //this.getViewIn('tabs').getViewIn('tab-html').getEditor('code').validate(true);
           this.getEditor('data').validate(true);
         }
       },
