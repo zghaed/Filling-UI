@@ -80,7 +80,7 @@
     actions: {
       'change-direction': function() {
         app.notify('Action triggered!', 'Direction changed!');
-        var groups = this.getRegion('group').$el.children(':first'),
+        var groups = this.getRegion('group').$el,
           boxName = this.$el.parent().attr('region'),
           currenctDirection = this.getEditor('direction').getVal();
         if (currenctDirection==='v') {
@@ -88,8 +88,9 @@
             'flex-direction': 'column',
           });
           var rowChildren = groups.children();
+          console.log('rowChildren, ', rowChildren);
           for (var i=0; i<rowChildren.length; i++) {
-            $(rowChildren[i]).css({
+            $(rowChildren[i]).find('.regional-group').css({
               'flex-direction': 'column',
             });
           }
@@ -99,7 +100,7 @@
           });
           var columnChildren = groups.children();
           for (var j=0; j<columnChildren.length; j++) {
-            $(columnChildren[j]).css({
+            $(columnChildren[j]).find('.regional-group').css({
               'flex-direction': 'row',
             });
           }
@@ -207,7 +208,6 @@
       '<div region="content"></div>',
       '<div region="add"></div>',
     ],
-  //  useParentData: 'name',
     onReady: function() {
       if (this.get('template') !== '') {
         var theTemplateScript = this.get('template'),
