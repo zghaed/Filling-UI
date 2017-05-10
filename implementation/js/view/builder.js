@@ -33,8 +33,8 @@
         'align-items': 'stretch',
         'overflow': 'auto'
       });
-      var regionNames = ['top-left-box', 'top-right-box', 'middle-box', 'bottom-right-box'];
-      var self = this;
+      var regionNames = ['top-left-box', 'top-right-box', 'middle-box', 'bottom-right-box'],
+        self = this;
       app.until(
         _.map(regionNames, function(name) {
           return (self.show(name, Box, {
@@ -88,7 +88,6 @@
             'flex-direction': 'column',
           });
           var rowChildren = groups.children();
-          console.log('rowChildren, ', rowChildren);
           for (var i=0; i<rowChildren.length; i++) {
             $(rowChildren[i]).find('.regional-group').css({
               'flex-direction': 'column',
@@ -266,9 +265,9 @@
         uniqueId = viewAndRegion + '-' + boxName + '-' + this.get('obj').groupNumber;
       if (this.get('obj').css) {
         this.$el.attr('id', uniqueId);
-        var theme = $('head link[rel="stylesheet"]').attr('href').split('/')[1];
-        var less = '#' + uniqueId + '{' + this.get('obj').css + '}';
-        var self = this;
+        var theme = $('head link[rel="stylesheet"]').attr('href').split('/')[1],
+          less = '#' + uniqueId + '{' + this.get('obj').css + '}',
+          self = this;
         if (self.flag === undefined) {
           self.flag = true;
         }
@@ -375,16 +374,14 @@
           if (this.get('type') === 'edit') {
             //Editing an element
             var allBoxes = app.store.get(viewAndRegion),
-              editRegionBoxes = allBoxes[boxName];
-            var editedObj = {
-              template:    this.getViewIn('tabs').$el.find('[region="tab-html"] [editor="code"] textarea').val(),
-              data:        this.getEditor('data').getVal(),
-              css:         this.getViewIn('tabs').$el.find('[region="tab-css"] [editor="code"] textarea').val(),
-              direction:   obj.direction,
-            };
-            console.log('edited array before, ', editRegionBoxes);
+              editRegionBoxes = allBoxes[boxName],
+              editedObj = {
+                template:    this.getViewIn('tabs').$el.find('[region="tab-html"] [editor="code"] textarea').val(),
+                data:        this.getEditor('data').getVal(),
+                css:         this.getViewIn('tabs').$el.find('[region="tab-css"] [editor="code"] textarea').val(),
+                direction:   obj.direction,
+              };
             editRegionBoxes[groupNumber] = editedObj;
-            console.log('edited array after, ', editRegionBoxes);
             allBoxes[boxName] = editRegionBoxes;
             var options = {
               newBoxes: allBoxes[boxName],
@@ -400,8 +397,8 @@
               data:        this.getEditor('data').getVal(),
               css:         this.getViewIn('tabs').$el.find('[region="tab-css"] [editor="code"] textarea').val(),
               direction:   obj.direction,
-            };
-            var cacheData = app.store.get(viewAndRegion),
+            },
+              cacheData = app.store.get(viewAndRegion),
               addRegionBoxes = cacheData[boxName];
 
             addRegionBoxes.splice(groupNumber + 1, 0 , newObj);
@@ -416,6 +413,7 @@
           }
         } else {
           //TODO: Why this is undefined?
+          console.log('tbas, ', this.getViewIn('tabs').$el.getViewIn('tab-html'));
           //this.getViewIn('tabs').getViewIn('tab-html').getEditor('code').validate(true);
           this.getEditor('data').validate(true);
         }
@@ -452,8 +450,8 @@
     },
     onReady: function() {
       this.$el.find('[tabId="html"]').addClass('active');
-      var tabIds = ['css', 'html'];
-      var self = this;
+      var tabIds = ['css', 'html'],
+        self = this;
       _.map(tabIds, function(tabId) {
         self.tab('tabs', app.view({
           template: ['<div editor="code"></div>'],
