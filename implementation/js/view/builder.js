@@ -114,7 +114,6 @@
               data:        box.data,
               css:				 box.css,
               direction:   currenctDirection,
-              groupNumber: box.groupNumber
             };
           });
         allBoxes[boxName] = editedBoxes;
@@ -147,7 +146,21 @@
       }
     },
     onReady: function() {
-      this.more('group', this.get('boxes'), Group, true);
+      var self = this,
+        name = this.get('name').split('/'),
+        boxName = name.pop(),
+        viewAndRegion = name[0],
+        groupNumber = 0;
+      _.each(this.get('boxes'), function(box) {
+        var id = viewAndRegion + '-' + boxName + '-' + groupNumber + '-id';
+        box.name = self.get('name');
+        box.groupNumber = groupNumber;
+        self.getRegion('group').$el.append('<div id="'+id+'"></div>');
+        var group =  new Group({data:box});
+        self.spray($('#'+id), group);
+        groupNumber = groupNumber + 1;
+      });
+
       if (this.$el.parent().hasClass('region-middle-box')) {
         for (var i=0; i<this.$el.children().length-1; i++) {
           if (!this.$el.children().eq(i).hasClass('direction')) {
@@ -158,8 +171,8 @@
       if (this.get('boxes').length > 1) {
         this.$el.children('.direction').removeClass('hide');
         this.$el.parent().removeClass('hide');
-        var name = '.triangle-' + this.$el.parent().attr('region');
-        this.$el.parent().parent().children('.region-middle-box').children(':first').children(name).toggleClass('triangle-show');
+        var triangleName = '.triangle-' + this.$el.parent().attr('region');
+        this.$el.parent().parent().children('.region-middle-box').children(':first').children(triangleName).toggleClass('triangle-show');
         var currentDirection = this.get('boxes')[0].direction;
         var groups = this.getRegion('group').$el.children(':first');
         if (currentDirection==='v') {
@@ -194,7 +207,7 @@
       '<div region="content"></div>',
       '<div region="add"></div>',
     ],
-    useParentData: 'name',
+  //  useParentData: 'name',
     onReady: function() {
       if (this.get('template') !== '') {
         var theTemplateScript = this.get('template'),
@@ -362,19 +375,17 @@
           if (this.get('type') === 'edit') {
             //Editing an element
             var allBoxes = app.store.get(viewAndRegion),
-              editRegionBoxes = allBoxes[boxName],
-              rest = _.filter(editRegionBoxes, function(box) {
-                return (box.groupNumber !== groupNumber);
-              });
+              editRegionBoxes = allBoxes[boxName];
             var editedObj = {
               template:    this.getViewIn('tabs').$el.find('[region="tab-html"] [editor="code"] textarea').val(),
               data:        this.getEditor('data').getVal(),
               css:         this.getViewIn('tabs').$el.find('[region="tab-css"] [editor="code"] textarea').val(),
               direction:   obj.direction,
-              groupNumber: groupNumber
             };
-            rest.push(editedObj);
-            allBoxes[boxName] = rest;
+            console.log('edited array before, ', editRegionBoxes);
+            editRegionBoxes[groupNumber] = editedObj;
+            console.log('edited array after, ', editRegionBoxes);
+            allBoxes[boxName] = editRegionBoxes;
             var options = {
               newBoxes: allBoxes[boxName],
               name: obj.name
@@ -389,26 +400,12 @@
               data:        this.getEditor('data').getVal(),
               css:         this.getViewIn('tabs').$el.find('[region="tab-css"] [editor="code"] textarea').val(),
               direction:   obj.direction,
-              groupNumber: groupNumber + 1
             };
             var cacheData = app.store.get(viewAndRegion),
-              addRegionBoxes = cacheData[boxName],
-              editedBoxes = _.map(addRegionBoxes, function(box) {
-              if (box.groupNumber <= groupNumber) {
-                return box;
-              } else {
-                return {
-                  template:    box.template,
-                  data:        box.data,
-                  css:         box.css,
-                  direction:   box.direction,
-                  boxName:     box.boxName,
-                  groupNumber: box.groupNumber + 1
-                };
-              }
-            });
-            editedBoxes.push(newObj);
-            cacheData[boxName] = editedBoxes;
+              addRegionBoxes = cacheData[boxName];
+
+            addRegionBoxes.splice(groupNumber + 1, 0 , newObj);
+            cacheData[boxName] = addRegionBoxes;
             var addOptions = {
               newBoxes: cacheData[boxName],
               name: obj.name
@@ -438,17 +435,10 @@
           data = obj.data,
           css = obj.css,
           cacheData = app.store.get(viewAndRegion),
-          deleteRegionBoxes = cacheData[boxName],
-          deletedBoxes = _.filter(deleteRegionBoxes, function(box) {
-          if (!(box.groupNumber === groupNumber &&
-                box.direction   === direction &&
-                box.template    === template &&
-                box.data        === data &&
-                box.css         === css)) {
-            return box;
-          }
-        });
-        cacheData[boxName] = deletedBoxes;
+          deleteRegionBoxes = cacheData[boxName];
+
+        deleteRegionBoxes.splice(groupNumber, 1);
+        cacheData[boxName] = deleteRegionBoxes;
         var options = {
           newBoxes: cacheData[boxName],
           name: name
