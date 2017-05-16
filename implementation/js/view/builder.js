@@ -2,10 +2,10 @@
 
   app.view('Builder', {
     template: [
-      '<div class="area hide" region="top-left-box"></div>',
-      '<div class="area hide" region="top-right-box"></div>',
+    //  '<div class="area hide" region="top-left-box"></div>',
+    //  '<div class="area hide" region="top-right-box"></div>',
       '<div class="area" region="middle-box"></div>',
-      '<div class="area hide" region="bottom-right-box"></div>',
+    //  '<div class="area hide" region="bottom-right-box"></div>',
     ],
     coop: ['update-data'],
     onUpdateData: function(options) {
@@ -33,7 +33,7 @@
         'align-items': 'stretch',
         'overflow': 'auto'
       });
-      var regionNames = ['top-left-box', 'top-right-box', 'middle-box', 'bottom-right-box'],
+      var regionNames = ['middle-box'],//['top-left-box', 'top-right-box', 'middle-box', 'bottom-right-box'],
         self = this;
       app.until(
         _.map(regionNames, function(name) {
@@ -56,10 +56,10 @@
   var Box = app.view({
     name: 'box',
     template: [
-      '<div class="triangle-top-left-box hide" action-click="toggle-top-left"></div>',
-      '<div class="triangle-top-right-box hide" action-click="toggle-top-right"></div>',
+    //  '<div class="triangle-top-left-box hide" action-click="toggle-top-left"></div>',
+    //  '<div class="triangle-top-right-box hide" action-click="toggle-top-right"></div>',
       '<div class="direction hide" editor="direction" action="change-direction"></div>',
-      '<div class="triangle-bottom-right-box hide" action-click="toggle-bottom-right"></div>',
+    //  '<div class="triangle-bottom-right-box hide" action-click="toggle-bottom-right"></div>',
       '<div class="triangle-bottom-left-box hide" ui="toggle-preview" action-click="toggle-preview"></div>',
       '<div region="group"></div>',
     ],
@@ -139,9 +139,9 @@
         currentBuilder.find('[action-click="edit-element"]').toggleClass('toggle-pointer', this._preview);
         currentBuilder.find('.add-button').toggleClass('toggle-preview', this._preview);
         currentBuilder.find('.direction').toggleClass('toggle-preview', this._preview);
-        currentBuilder.find('.triangle-top-left-box').toggleClass('toggle-preview', this._preview);
-        currentBuilder.find('.triangle-top-right-box').toggleClass('toggle-preview', this._preview);
-        currentBuilder.find('.triangle-bottom-right-box').toggleClass('toggle-preview', this._preview);
+    //    currentBuilder.find('.triangle-top-left-box').toggleClass('toggle-preview', this._preview);
+    //    currentBuilder.find('.triangle-top-right-box').toggleClass('toggle-preview', this._preview);
+    //    currentBuilder.find('.triangle-bottom-right-box').toggleClass('toggle-preview', this._preview);
         currentBuilder.find('.area').toggleClass('toggle-borders', this._preview);
       }
     },
@@ -204,10 +204,26 @@
 
   var Group = app.view('Group', {
     template: [
-      '<div region="content"></div>',
-      '<div region="add"></div>',
+      '<div region="content">test<div class="drag ui-draggable-item "></div></div>',
+    //  '<div region="add"></div>',
     ],
+    dnd: {
+      drag: true,
+      //sort: true,
+    },
+    onDrag: app.throttle(function(){
+      var offset = $(this.$el.find('.ui-draggable-dragging')).offset();
+      var xPos = offset.left;
+      var yPos = offset.top;
+      console.log('draggable', yPos);
+    }),
     onReady: function() {
+      var isResizing = false,
+        lastDownX = 0,
+        handle = this.$el.find('.drag');
+      var m = parseInt(this.$el.css('width')) / 2;
+      handle.css('margin-left', m);
+      console.log('trying to find height... ,', m);
       if (this.get('template') !== '') {
         var theTemplateScript = this.get('template'),
           inputData = this.get('data'),
@@ -231,12 +247,12 @@
       this.$el.css({
         'order': this.get('groupNumber'),
       });
-      var addData = {
-        obj: this.get()
-      };
-      this.show('add', AddButton, {
-        data: addData
-      });
+      // var addData = {
+      //   obj: this.get()
+      // };
+      // this.show('add', AddButton, {
+      //   data: addData
+      // });
     }
   });
 
