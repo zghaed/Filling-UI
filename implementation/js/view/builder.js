@@ -25,7 +25,7 @@
     onReady: function() {
       var boxes = app.store.get(this.get('name'));
       this.$el.css({
-        'padding': '1em',
+      //  'padding': '1em',
         'display': 'flex',
         'flex-flow': 'row wrap',
         'justify-content': 'flex-end',
@@ -204,26 +204,12 @@
 
   var Group = app.view('Group', {
     template: [
-      '<div region="content">test<div class="drag ui-draggable-item "></div></div>',
+      '<div region="content">test</div>',
     //  '<div region="add"></div>',
     ],
-    dnd: {
-      drag: true,
-      //sort: true,
-    },
-    onDrag: app.throttle(function(){
-      var offset = $(this.$el.find('.ui-draggable-dragging')).offset();
-      var xPos = offset.left;
-      var yPos = offset.top;
-      console.log('draggable', yPos);
-    }),
+
     onReady: function() {
-      var isResizing = false,
-        lastDownX = 0,
-        handle = this.$el.find('.drag');
-      var m = parseInt(this.$el.css('width')) / 2;
-      handle.css('margin-left', m);
-      console.log('trying to find height... ,', m);
+
       if (this.get('template') !== '') {
         var theTemplateScript = this.get('template'),
           inputData = this.get('data'),
@@ -258,8 +244,25 @@
 
   var Content = app.view({
     template: [
-      '<div region="view-lock" action-click="edit-element">{{{element}}}</div>'
+      '<div class="ui-draggable-item drag-top"></div>',
+      //  '<div class="ui-draggable-item drag-left"></div>',
+      '<div region="view-lock" action-click="edit-element">{{{element}}}</div>',
+      '<div class="ui-draggable-item drag-bottom"></div>',
+      //  '<div class="ui-draggable-item drag-right"></div>',
     ],
+    dnd: {
+      drag: true,
+    },
+    onDrag: function() {
+      var offset = $(this.$el.find('.ui-draggable-dragging')).offset(),
+        yPos = offset.top,
+        currentHeight = yPos - this.initialOffset;
+      this.$el.parent().css('height', currentHeight);
+      this.$el.find('.drag-bottom').css('top', currentHeight);
+    },
+    onDrop: function() {
+      console.log('dropped');
+    },
     actions: {
       'edit-element': function($btn) {
         var obj = this.get('obj');
@@ -275,6 +278,12 @@
       }
     },
     onReady: function() {
+      var bottomHandle = this.$el.find('.drag-bottom'),
+        topHandle = this.$el.find('.drag-top'),
+        marginLeft = parseInt(this.$el.css('width')) / 2;
+      bottomHandle.css('margin-left', marginLeft);
+      bottomHandle.css('top', this.get('height'));
+      this.initialOffset = parseInt(this.$el.find('.drag-bottom').offset().top) - this.$el.height();
       var name  = this.get('obj').name.split('/'),
         boxName = name.pop(),
         viewAndRegion = name[0],
@@ -300,6 +309,8 @@
           var uniqueCSS = uniqueId + '-css';
           $('#' +  uniqueCSS).remove();
           $('head').append('<style id="' + uniqueCSS + '">' + data.msg + '</style>');
+          bottomHandle.css('top', self.$el.height());
+          // topHandle.css('margin-left', marginLeft);
         });
       } else {
         var uniqueCSS = uniqueId + '-css';

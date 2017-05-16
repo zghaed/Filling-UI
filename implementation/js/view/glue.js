@@ -23,14 +23,14 @@
              }
           });
           app.store.set(cacheName, app.store.get(cacheName) || {
-            'top-left-box':
-              [{'template': '', 'data':'', 'css':'', 'direction':'h'}],
-            'top-right-box':
-              [{'template': '', 'data':'', 'css':'', 'direction':'h'}],
+            // 'top-left-box':
+            //   [{'template': '', 'data':'', 'css':'', 'direction':'h'}],
+            // 'top-right-box':
+            //   [{'template': '', 'data':'', 'css':'', 'direction':'h'}],
             'middle-box':
-              [{'template': '', 'data':'', 'css':'', 'direction':'v'}],
-            'bottom-right-box':
-              [{'template': '', 'data':'', 'css':'', 'direction':'h'}]
+              [{'template': 'hi', 'data':'', 'css':'height:200px;width:50px;', 'direction':'v'}],
+            // 'bottom-right-box':
+            //   [{'template': '', 'data':'', 'css':'', 'direction':'h'}]
           });
           this.spray(target, builder);
         }
@@ -41,7 +41,7 @@
         var caches = app.store.getAll(),
           keys = [],
           viewName = this.getViewIn('glue-region').name,
-          regionNames = ['top-left-box', 'top-right-box', 'middle-box', 'bottom-right-box'];
+          regionNames = ['middle-box'];//['top-left-box', 'top-right-box', 'middle-box', 'bottom-right-box'];
         _.each(caches, function(val, key) {
           var keyArray = key.split('-');
           if (keyArray[0] === viewName) {
@@ -64,14 +64,14 @@
              }
           });
           app.store.set(key, app.store.get(key) || {
-            'top-left-box':
-              [{'template': '', 'data':'', 'css':'', 'direction':'h'}],
-            'top-right-box':
-              [{'template': '', 'data':'', 'css':'', 'direction':'h'}],
+            // 'top-left-box':
+            //   [{'template': '', 'data':'', 'css':'', 'direction':'h'}],
+            // 'top-right-box':
+            //   [{'template': '', 'data':'', 'css':'', 'direction':'h'}],
             'middle-box':
-              [{'template': '', 'data':'', 'css':'', 'direction':'v'}],
-            'bottom-right-box':
-              [{'template': '', 'data':'', 'css':'', 'direction':'h'}]
+              [{'template': 'bye', 'data':'', 'css':'height:200px;width:50px;', 'direction':'v'}],
+            // 'bottom-right-box':
+            //   [{'template': '', 'data':'', 'css':'', 'direction':'h'}]
           });
           var nameArray = key.split('-');
           nameArray.shift();
