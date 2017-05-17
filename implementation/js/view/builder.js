@@ -207,9 +207,7 @@
       '<div region="content">test</div>',
     //  '<div region="add"></div>',
     ],
-
     onReady: function() {
-
       if (this.get('template') !== '') {
         var theTemplateScript = this.get('template'),
           inputData = this.get('data'),
@@ -252,13 +250,19 @@
     ],
     dnd: {
       drag: true,
+      drop: true
     },
-    onDrag: function() {
-      var offset = $(this.$el.find('.ui-draggable-dragging')).offset(),
-        yPos = offset.top,
-        currentHeight = yPos - this.initialOffset;
-      this.$el.parent().css('height', currentHeight);
-      this.$el.find('.drag-bottom').css('top', currentHeight);
+    onDrag: function(e) {
+      var currentHeight = arguments[1].offset.top - this.initialOffset;
+      if (e.hasClass('drag-bottom')) {
+      //  console.log('args, ', e);
+        this.$el.parent().css('height', currentHeight);
+        this.$el.find('.drag-bottom').css('top', currentHeight);
+      } else if (e.hasClass('drag-top')) {
+        console.log('top...');
+        var marginTop = this.initialHeight - currentHeight + this.initialOffset;
+        console.log('margin is, ', marginTop);
+      }
     },
     onDrop: function() {
       console.log('dropped');
@@ -282,8 +286,10 @@
         topHandle = this.$el.find('.drag-top'),
         marginLeft = parseInt(this.$el.css('width')) / 2;
       bottomHandle.css('margin-left', marginLeft);
+      topHandle.css('margin-left', marginLeft);
       bottomHandle.css('top', this.get('height'));
-      this.initialOffset = parseInt(this.$el.find('.drag-bottom').offset().top) - this.$el.height();
+      this.initialHeight = this.$el.height();
+      this.initialOffset = parseInt(this.$el.find('.drag-bottom').offset().top) - this.initialHeight;
       var name  = this.get('obj').name.split('/'),
         boxName = name.pop(),
         viewAndRegion = name[0],
