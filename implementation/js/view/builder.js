@@ -15,7 +15,9 @@
         nameArray = ViewAndRegion.split('-');
       nameArray.shift();
       var region = nameArray.join('-');
+      console.log('region in coop is, ', region);
       if(region === this.$el.parent().attr('region')) {
+        //TODO: empty array remove existing view
         this.getViewIn(boxName).set({
           name: options.name,
           boxes: options.newBoxes
@@ -132,17 +134,18 @@
         this.$el.children('.triangle-bottom-right-box').toggleClass('triangle-show');
       },
       'toggle-preview': function() {
-        if(this._preview === undefined)
-          this._preview = false;
-        var currentBuilder = this.$el.parent().parent();
-        this._preview = !this._preview;
-        currentBuilder.find('[action-click="edit-element"]').toggleClass('toggle-pointer', this._preview);
-        currentBuilder.find('.add-button').toggleClass('toggle-preview', this._preview);
-        currentBuilder.find('.direction').toggleClass('toggle-preview', this._preview);
-    //    currentBuilder.find('.triangle-top-left-box').toggleClass('toggle-preview', this._preview);
-    //    currentBuilder.find('.triangle-top-right-box').toggleClass('toggle-preview', this._preview);
-    //    currentBuilder.find('.triangle-bottom-right-box').toggleClass('toggle-preview', this._preview);
-        currentBuilder.find('.area').toggleClass('toggle-borders', this._preview);
+        //TODO: toggle preview
+    //     if(this._preview === undefined)
+    //       this._preview = false;
+    //     var currentBuilder = this.$el.parent().parent();
+    //     this._preview = !this._preview;
+    //     currentBuilder.find('[action-click="edit-element"]').toggleClass('toggle-pointer', this._preview);
+    //     currentBuilder.find('.add-button').toggleClass('toggle-preview', this._preview);
+    //     currentBuilder.find('.direction').toggleClass('toggle-preview', this._preview);
+    //     currentBuilder.find('.triangle-top-left-box').toggleClass('toggle-preview', this._preview);
+    //     currentBuilder.find('.triangle-top-right-box').toggleClass('toggle-preview', this._preview);
+    //     currentBuilder.find('.triangle-bottom-right-box').toggleClass('toggle-preview', this._preview);
+    //     currentBuilder.find('.area').toggleClass('toggle-borders', this._preview);
       }
     },
     onReady: function() {
@@ -167,7 +170,9 @@
           }
         }
       }
-      if (this.get('boxes').length > 1) {
+      //TODO: add direction and consider height of change direction
+      //if (this.get('boxes').length > 1) {
+      if (false) {
         this.$el.children('.direction').removeClass('hide');
         this.$el.parent().removeClass('hide');
         var triangleName = '.triangle-' + this.$el.parent().attr('region');
@@ -217,48 +222,78 @@
     },
     flag: true,
     onDrag: function(event, ui) {
-      var currentHeight,
-        change;
+      var currentHeight;
       if (event.hasClass('drag-bottom')) {
-         change = arguments[1].originalPosition.top  - arguments[1].position.top;
+         this.change = arguments[1].originalPosition.top  - arguments[1].position.top;
          this.$el.css('height', arguments[1].position.top + this.$el.find('.drag-bottom').height());
       } else if (event.hasClass('drag-top')) {
-    //    this.$el.find('.drag-top').css('top', 0);
+      //  this.$el.find('.drag-top').css('top', 0);
         this.$el.css('top', this.initialTop + arguments[1].position.top);
-        change = arguments[1].position.top - arguments[1].originalPosition.top;
+        this.$el.find('.drag-top').css('top', 0);
+        this.change = arguments[1].position.top - arguments[1].originalPosition.top;
         if (this.flag) {
           this.initialHeight = this.$el.height();
           this.flag = false;
         }
-        this.$el.css('height', this.initialHeight - change);
+        this.$el.css('height', this.initialHeight - this.change);
       }
     },
     onDragStop: function(event, ui) {
+      //TODO: Disable creating new group for middle dragging
       this.$el.find('.drag-top').css('left', '50%');
       this.$el.find('.drag-bottom').css('left', '50%');
       this.initialHeight = parseInt(this.$el.css('height'));
       this.initialTop = parseInt(this.$el.css('top'));
+    //  debugger;
       var id = this.$el.parent().attr('id');
       var arrayId = id.split('-');
-      if (event.hasClass('drag-top')) {
-        var data = {
-          template: '',
+      arrayId.pop();
+      var name = this.get('name').split('/'),
+        viewAndRegion = name[0],
+        allBoxes = app.store.get(viewAndRegion),
+        addGroup = allBoxes[name[1]],
+        last = addGroup.length - 1;
+        groupNumber = arrayId.pop();
+      if (parseInt(groupNumber) === 0 || parseInt(groupNumber) === last) {
+        var newData = {
+          template: 'Add',
           data: '',
-          css: 'height:100px;position:relative;.regional-group{position:relative;height:100%;width:100%;}',
+          css: 'height:' + this.change + 'px;position:relative;.regional-group{position:relative;height:100%;width:100%;}',
           direction: 'v'
         };
-        var name = this.get('name').split('/');
-        var viewAndRegion = name[0],
-          allBoxes = app.store.get(viewAndRegion),
-          addGroup = allBoxes[name[1]];
-          addGroup.unshift(data);
-         allBoxes[name[1]] = addGroup;
+        if (event.hasClass('drag-top')) {
+          var editedDataTop = {
+            template: addGroup[0].template,
+            data: addGroup[0].data,
+            css: 'height:' + this.initialHeight + 'px;position:relative;.regional-group{position:relative;height:100%;width:100%;}',
+            direction: addGroup[0].direction
+          };
+          addGroup.shift();
+          addGroup.unshift(editedDataTop);
+          addGroup.unshift(newData);
+        } else if (event.hasClass('drag-bottom')){
+          var index = addGroup.length - 1;
+          var editedDataBottom = {
+            template: addGroup[index].template,
+            data: addGroup[index].data,
+            css: 'height:' + this.initialHeight + 'px;position:relative;.regional-group{position:relative;height:100%;width:100%;}',
+            direction: addGroup[index].direction
+          };
+          addGroup.pop();
+          addGroup.push(editedDataBottom);
+          addGroup.push(newData);
+        }
+        allBoxes[name[1]] = addGroup;
         var options = {
           newBoxes: allBoxes[name[1]],
           name: this.get('name')
         };
          app.store.set(viewAndRegion, allBoxes);
+         var cssId = viewAndRegion + '-' + name[1] + '-' + groupNumber + '-css';
+         $('#' + cssId).remove();
          app.coop('update-data', options);
+      } else {
+        console.log('middle box is changed', groupNumber===last);
       }
     },
     onReady: function() {
@@ -480,11 +515,13 @@
         this.close();
       },
       delete: function() {
+        //TODO: change the height of surronding elements
         var obj = this.get('obj'),
           name = obj.name,
           nameArray = name.split('/'),
           boxName = nameArray.pop(),
           viewAndRegion = nameArray[0],
+          region = viewAndRegion.split('-').pop(),
           groupNumber = obj.groupNumber,
           direction = obj.direction,
           template = obj.template,
@@ -499,7 +536,12 @@
           newBoxes: cacheData[boxName],
           name: name
         };
-        app.store.set(viewAndRegion, cacheData);
+        if (cacheData[boxName].length > 0) {
+          app.store.set(viewAndRegion, cacheData);
+        } else {
+          app.store.set(viewAndRegion);
+        //  $('[region='+ region + ']').children(':first').remove();
+        }
         var cssId = viewAndRegion + '-' + boxName + '-' + groupNumber + '-css';
         $('#' + cssId).remove();
         app.coop('update-data', options);

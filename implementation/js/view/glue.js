@@ -12,13 +12,14 @@
     actions: {
       'show-builder': function($btn, e) {
         var target = $(e.target),
-          height = parseInt(target.height())/2,
+          height = target.height(),
           cacheName = this.getViewIn('glue-region').name + '-' + target.attr('region'),
           regions = (target.attr('region') === undefined) ||
             (target.attr('region') === ('middle-box' || 'top-left-box' || 'top-right-box' || 'bottom-right-box')),
           allCaches = app.store.getAll();
-          console.log('height, ', height);
+          console.log('all', allCaches, cacheName);
         if (!(allCaches[cacheName] || regions)) {
+                    console.log('height, ');
           var builder = app.get('Builder').create({
             data: {
               "name" : cacheName
@@ -30,8 +31,7 @@
             // 'top-right-box':
             //   [{'template': '', 'data':'', 'css':'', 'direction':'h'}],
             'middle-box':
-            [{'template': 'bye', 'data':'', 'css':'height:'+height+'px;position:relative;.regional-group{position:relative;height:100%;width:100%;}', 'direction':'v'},
-          {'template': 'bye', 'data':'', 'css':'height:'+height+'px;position:relative;.regional-group{position:relative;height:100%;width:100%;}', 'direction':'v'},],
+            [{'template': 'bye', 'data':'', 'css':'height:'+height+'px;position:relative;.regional-group{position:relative;height:100%;width:100%;}', 'direction':'v'},],
             // 'bottom-right-box':
             //   [{'template': '', 'data':'', 'css':'', 'direction':'h'}]
           });
@@ -73,8 +73,7 @@
             // 'top-right-box':
             //   [{'template': '', 'data':'', 'css':'', 'direction':'h'}],
             'middle-box':
-              [{'template': 'bye', 'data':'', 'css':'height:'+height+'px;position:relative;.regional-group{position:relative;height:100%;width:100%;}', 'direction':'v'},
-            {'template': 'bye', 'data':'', 'css':'height:'+height+'px;position:relative;.regional-group{position:relative;height:100%;width:100%;}', 'direction':'v'},],
+              [{'template': 'bye', 'data':'', 'css':'height:'+height+'px;position:relative;.regional-group{position:relative;height:100%;width:100%;}', 'direction':'v'},],
             // 'bottom-right-box':
             //   [{'template': '', 'data':'', 'css':'', 'direction':'h'}]
           });
