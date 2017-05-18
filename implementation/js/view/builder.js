@@ -204,9 +204,40 @@
 
   var Group = app.view('Group', {
     template: [
-      '<div region="content">test</div>',
+      '<div class="ui-draggable-item drag-top"></div>',
+      //  '<div class="ui-draggable-item drag-left"></div>',
+      '<div region="content"></div>',
+      '<div class="ui-draggable-item drag-bottom"></div>',
+      //  '<div class="ui-draggable-item drag-right"></div>',
     //  '<div region="add"></div>',
     ],
+    dnd: {
+      drag: true
+    },
+    flag: true,
+    onDrag: function(event, ui) {
+      var currentHeight,
+        change;
+      if (event.hasClass('drag-bottom')) {
+         change = arguments[1].originalPosition.top  - arguments[1].position.top;
+         this.$el.css('height', arguments[1].position.top);
+      } else if (event.hasClass('drag-top')) {
+        this.$el.find('.drag-top').css('top', 0);
+        this.$el.css('top', this.initialTop + arguments[1].position.top);
+        change = arguments[1].position.top - arguments[1].originalPosition.top;
+        if (this.flag) {
+          this.initialHeight = this.$el.height();
+          this.flag = false;
+        }
+        this.$el.css('height', this.initialHeight - change);
+      }
+    },
+    onDragStop: function() {
+      this.$el.find('.drag-top').css('left', '50%');
+      this.$el.find('.drag-bottom').css('left', '50%');
+      this.initialHeight = parseInt(this.$el.css('height'));
+      this.initialTop = parseInt(this.$el.css('top'));
+    },
     onReady: function() {
       if (this.get('template') !== '') {
         var theTemplateScript = this.get('template'),
@@ -237,36 +268,17 @@
       // this.show('add', AddButton, {
       //   data: addData
       // });
+      this.$el.find('.drag-top').css('left', '50%');
+      this.$el.find('.drag-bottom').css('left', '50%');
+      this.initialTop = 0;
     }
   });
 
   var Content = app.view({
     template: [
-      '<div class="ui-draggable-item drag-top"></div>',
-      //  '<div class="ui-draggable-item drag-left"></div>',
       '<div region="view-lock" action-click="edit-element">{{{element}}}</div>',
-      '<div class="ui-draggable-item drag-bottom"></div>',
-      //  '<div class="ui-draggable-item drag-right"></div>',
     ],
-    dnd: {
-      drag: true,
-      drop: true
-    },
-    onDrag: function(e) {
-      var currentHeight = arguments[1].offset.top - this.initialOffset;
-      if (e.hasClass('drag-bottom')) {
-      //  console.log('args, ', e);
-        this.$el.parent().css('height', currentHeight);
-        this.$el.find('.drag-bottom').css('top', currentHeight);
-      } else if (e.hasClass('drag-top')) {
-        console.log('top...');
-        var marginTop = this.initialHeight - currentHeight + this.initialOffset;
-        console.log('margin is, ', marginTop);
-      }
-    },
-    onDrop: function() {
-      console.log('dropped');
-    },
+
     actions: {
       'edit-element': function($btn) {
         var obj = this.get('obj');
@@ -282,22 +294,14 @@
       }
     },
     onReady: function() {
-      var bottomHandle = this.$el.find('.drag-bottom'),
-        topHandle = this.$el.find('.drag-top'),
-        marginLeft = parseInt(this.$el.css('width')) / 2;
-      bottomHandle.css('margin-left', marginLeft);
-      topHandle.css('margin-left', marginLeft);
-      bottomHandle.css('top', this.get('height'));
-      this.initialHeight = this.$el.height();
-      this.initialOffset = parseInt(this.$el.find('.drag-bottom').offset().top) - this.initialHeight;
       var name  = this.get('obj').name.split('/'),
         boxName = name.pop(),
         viewAndRegion = name[0],
-        uniqueId = viewAndRegion + '-' + boxName + '-' + this.get('obj').groupNumber;
+        uniqueId = viewAndRegion + '-' + boxName + '-' + this.get('obj').groupNumber ;
       if (this.get('obj').css) {
         this.$el.attr('id', uniqueId);
         var theme = $('head link[rel="stylesheet"]').attr('href').split('/')[1],
-          less = '#' + uniqueId + '{' + this.get('obj').css + '}',
+          less = '#' + uniqueId + '-id {' + this.get('obj').css + '}',
           self = this;
         if (self.flag === undefined) {
           self.flag = true;
@@ -315,8 +319,6 @@
           var uniqueCSS = uniqueId + '-css';
           $('#' +  uniqueCSS).remove();
           $('head').append('<style id="' + uniqueCSS + '">' + data.msg + '</style>');
-          bottomHandle.css('top', self.$el.height());
-          // topHandle.css('margin-left', marginLeft);
         });
       } else {
         var uniqueCSS = uniqueId + '-css';
@@ -347,8 +349,8 @@
       '<div class="row">',
       '<div class="form form-horizontal">',
       '<ul class="nav nav-tabs">',
-      '<li activate="single" tabId="html"><a>html</a></li>',
-      '<li activate="single" tabId="css"><a>css</a></li>',
+      '<li activate="single" tabid="html"><a>html</a></li>',
+      '<li activate="single" tabid="css"><a>css</a></li>',
       '</ul>',
       '<div region="tabs"></div>',
       '<div editor="data"></div>',
@@ -362,22 +364,22 @@
       '</div>'
     ],
     onItemActivated: function($item) {
-      var tabId = $item.attr('tabId');
+      var tabid = $item.attr('tabid');
       this.tab('tabs', app.view({
         template: ['<div editor="code"></div>'],
-        useParentData: tabId,
+        useParentData: tabid,
         editors: {
           code: {
-            value: this.get(tabId),
-            label: tabId,
+            value: this.get(tabid),
+            label: tabid,
             type: 'textarea',
-            placeholder: tabId,
+            placeholder: tabid,
             validate: {
               required: true
             }
           }
         }
-      }), tabId);
+      }), tabid);
     },
     editors: {
       data: {
@@ -482,25 +484,25 @@
       }
     },
     onReady: function() {
-      this.$el.find('[tabId="html"]').addClass('active');
-      var tabIds = ['css', 'html'],
+      this.$el.find('[tabid="html"]').addClass('active');
+      var tabids = ['css', 'html'],
         self = this;
-      _.map(tabIds, function(tabId) {
+      _.map(tabids, function(tabid) {
         self.tab('tabs', app.view({
           template: ['<div editor="code"></div>'],
-          useParentData: tabId,
+          useParentData: tabid,
           editors: {
             code: {
-              value: self.get(tabId),
-              label: tabId,
+              value: self.get(tabid),
+              label: tabid,
               type: 'textarea',
-              placeholder: tabId,
+              placeholder: tabid,
               validate: {
                 required: true
               }
             }
           }
-        }), tabId);
+        }), tabid);
       });
       if (this.get('type') === 'add') {
         this.$el.find('.delete-group').addClass('hide');

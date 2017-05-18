@@ -12,6 +12,7 @@
     actions: {
       'show-builder': function($btn, e) {
         var target = $(e.target),
+          height = target.height(),
           cacheName = this.getViewIn('glue-region').name + '-' + target.attr('region'),
           regions = (target.attr('region') === undefined) ||
             (target.attr('region') === ('middle-box' || 'top-left-box' || 'top-right-box' || 'bottom-right-box')),
@@ -28,7 +29,7 @@
             // 'top-right-box':
             //   [{'template': '', 'data':'', 'css':'', 'direction':'h'}],
             'middle-box':
-              [{'template': 'hi', 'data':'', 'css':'height:200px;width:50px;', 'direction':'v'}],
+            [{'template': 'bye', 'data':'', 'css':'height:'+height+';.regional-group{position:absolute;height:100%;width:100%;}', 'direction':'v'},],
             // 'bottom-right-box':
             //   [{'template': '', 'data':'', 'css':'', 'direction':'h'}]
           });
@@ -63,13 +64,14 @@
               "name" : key
              }
           });
+          console.log('height is,',self.getViewIn(key).height());
           app.store.set(key, app.store.get(key) || {
             // 'top-left-box':
             //   [{'template': '', 'data':'', 'css':'', 'direction':'h'}],
             // 'top-right-box':
             //   [{'template': '', 'data':'', 'css':'', 'direction':'h'}],
             'middle-box':
-              [{'template': 'bye', 'data':'', 'css':'height:200px;width:50px;', 'direction':'v'}],
+              [{'template': 'bye', 'data':'', 'css':'height:'+height+';.regional-group{position:absolute;height:100%;width:100%;}', 'direction':'v'},],
             // 'bottom-right-box':
             //   [{'template': '', 'data':'', 'css':'', 'direction':'h'}]
           });
