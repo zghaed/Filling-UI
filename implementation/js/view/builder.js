@@ -160,7 +160,6 @@
         self.spray($('#'+id), group);
         groupNumber = groupNumber + 1;
       });
-
       if (this.$el.parent().hasClass('region-middle-box')) {
         for (var i=0; i<this.$el.children().length-1; i++) {
           if (!this.$el.children().eq(i).hasClass('direction')) {
@@ -212,7 +211,9 @@
     //  '<div region="add"></div>',
     ],
     dnd: {
-      drag: true
+      drag: {
+        helper: 'original'
+      }
     },
     flag: true,
     onDrag: function(event, ui) {
@@ -220,9 +221,9 @@
         change;
       if (event.hasClass('drag-bottom')) {
          change = arguments[1].originalPosition.top  - arguments[1].position.top;
-         this.$el.css('height', arguments[1].position.top);
+         this.$el.css('height', arguments[1].position.top + this.$el.find('.drag-bottom').height());
       } else if (event.hasClass('drag-top')) {
-        this.$el.find('.drag-top').css('top', 0);
+    //    this.$el.find('.drag-top').css('top', 0);
         this.$el.css('top', this.initialTop + arguments[1].position.top);
         change = arguments[1].position.top - arguments[1].originalPosition.top;
         if (this.flag) {
@@ -232,11 +233,33 @@
         this.$el.css('height', this.initialHeight - change);
       }
     },
-    onDragStop: function() {
+    onDragStop: function(event, ui) {
       this.$el.find('.drag-top').css('left', '50%');
       this.$el.find('.drag-bottom').css('left', '50%');
       this.initialHeight = parseInt(this.$el.css('height'));
       this.initialTop = parseInt(this.$el.css('top'));
+      var id = this.$el.parent().attr('id');
+      var arrayId = id.split('-');
+      if (event.hasClass('drag-top')) {
+        var data = {
+          template: '',
+          data: '',
+          css: 'height:100px;position:relative;.regional-group{position:relative;height:100%;width:100%;}',
+          direction: 'v'
+        };
+        var name = this.get('name').split('/');
+        var viewAndRegion = name[0],
+          allBoxes = app.store.get(viewAndRegion),
+          addGroup = allBoxes[name[1]];
+          addGroup.unshift(data);
+         allBoxes[name[1]] = addGroup;
+        var options = {
+          newBoxes: allBoxes[name[1]],
+          name: this.get('name')
+        };
+         app.store.set(viewAndRegion, allBoxes);
+         app.coop('update-data', options);
+      }
     },
     onReady: function() {
       if (this.get('template') !== '') {

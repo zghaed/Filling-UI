@@ -12,11 +12,12 @@
     actions: {
       'show-builder': function($btn, e) {
         var target = $(e.target),
-          height = target.height(),
+          height = parseInt(target.height())/2,
           cacheName = this.getViewIn('glue-region').name + '-' + target.attr('region'),
           regions = (target.attr('region') === undefined) ||
             (target.attr('region') === ('middle-box' || 'top-left-box' || 'top-right-box' || 'bottom-right-box')),
           allCaches = app.store.getAll();
+          console.log('height, ', height);
         if (!(allCaches[cacheName] || regions)) {
           var builder = app.get('Builder').create({
             data: {
@@ -29,7 +30,8 @@
             // 'top-right-box':
             //   [{'template': '', 'data':'', 'css':'', 'direction':'h'}],
             'middle-box':
-            [{'template': 'bye', 'data':'', 'css':'height:'+height+';.regional-group{position:absolute;height:100%;width:100%;}', 'direction':'v'},],
+            [{'template': 'bye', 'data':'', 'css':'height:'+height+'px;position:relative;.regional-group{position:relative;height:100%;width:100%;}', 'direction':'v'},
+          {'template': 'bye', 'data':'', 'css':'height:'+height+'px;position:relative;.regional-group{position:relative;height:100%;width:100%;}', 'direction':'v'},],
             // 'bottom-right-box':
             //   [{'template': '', 'data':'', 'css':'', 'direction':'h'}]
           });
@@ -50,7 +52,8 @@
             _.each(regionNames, function(region) {
               groups += caches[key][region].length;
             });
-            if(groups < 5) {
+            console.log('groups, ', groups);
+            if(groups < 1) {
               app.store.set(key);
             } else {
               keys.push(key);
@@ -64,14 +67,14 @@
               "name" : key
              }
           });
-          console.log('height is,',self.getViewIn(key).height());
           app.store.set(key, app.store.get(key) || {
             // 'top-left-box':
             //   [{'template': '', 'data':'', 'css':'', 'direction':'h'}],
             // 'top-right-box':
             //   [{'template': '', 'data':'', 'css':'', 'direction':'h'}],
             'middle-box':
-              [{'template': 'bye', 'data':'', 'css':'height:'+height+';.regional-group{position:absolute;height:100%;width:100%;}', 'direction':'v'},],
+              [{'template': 'bye', 'data':'', 'css':'height:'+height+'px;position:relative;.regional-group{position:relative;height:100%;width:100%;}', 'direction':'v'},
+            {'template': 'bye', 'data':'', 'css':'height:'+height+'px;position:relative;.regional-group{position:relative;height:100%;width:100%;}', 'direction':'v'},],
             // 'bottom-right-box':
             //   [{'template': '', 'data':'', 'css':'', 'direction':'h'}]
           });
