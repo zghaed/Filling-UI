@@ -134,6 +134,7 @@
         this.$el.children('.triangle-bottom-right-box').toggleClass('triangle-show');
       },
       'toggle-preview': function() {
+          app.notify('Action triggered!', 'Direction changed!');
         //TODO: toggle preview
     //     if(this._preview === undefined)
     //       this._preview = false;
@@ -172,8 +173,7 @@
         }
       }
       //TODO: add direction and consider height of change direction
-      //if (this.get('boxes').length > 1) {
-      if (false) {
+      if (this.get('boxes').length > 1) {
         this.$el.children('.direction').removeClass('hide');
         this.$el.parent().removeClass('hide');
         var triangleName = '.triangle-' + this.$el.parent().attr('region');
@@ -246,7 +246,21 @@
            $('#new').css('flex', '0 1 '+ newBottomHeight +'%');
            this.$el.parent().css('flex', '0 1 '+ bottomHeight +'%');
         } else {
-          console.log('between bottom');
+          var currentIdBottom = this.$el.parent().attr('id');
+          var nextBottom = $('#' + currentIdBottom).next();
+          if (this.heightFlag) {
+            this.initialHeight = this.$el.height();
+            this.heightFlag = false;
+            this.initialBasis = parseInt(this.$el.parent().css('flex-basis'));
+            this.nextBasis = parseInt(nextBottom.css('flex-basis'));
+          }
+          this.change = arguments[1].originalPosition.top - arguments[1].position.top;
+          var nextHeightBottom = parseInt(this.change/this.initialHeight*this.initialBasis);
+          var newNextHeightBottom = nextHeightBottom + this.nextBasis;
+          var newHeightBottom = this.initialBasis - nextHeightBottom;
+          console.log('ddragging bottom, ',  this.initialBasis, newNextHeightBottom);
+          nextBottom.css('flex', '0 1 '+ newNextHeightBottom +'%');
+          this.$el.parent().css('flex', '0 1 '+ newHeightBottom +'%');
         }
       } else if (event.hasClass('drag-top')) {
         if (parseInt(groupNumber) === 0) {
@@ -261,7 +275,20 @@
           $('#new').css('flex', '0 1 '+ newTopHeight +'%');
           this.$el.parent().css('flex', '0 1 '+ newHeight +'%');
         } else {
-          console.log('between top');
+          var currentId = this.$el.parent().attr('id');
+          var prev = $('#' + currentId).prev();
+          if (this.heightFlag) {
+            this.initialHeight = this.$el.height();
+            this.heightFlag = false;
+            this.initialBasis = parseInt(this.$el.parent().css('flex-basis'));
+            this.prevBasis = parseInt(prev.css('flex-basis'));
+          }
+          this.change = arguments[1].position.top - arguments[1].originalPosition.top;
+          var newPrevHeight = parseInt(this.change/this.initialHeight*this.initialBasis);
+          var prevHeight = newPrevHeight + this.prevBasis;
+          var newHeightTop = this.initialBasis - newPrevHeight;
+          prev.css('flex', '0 1 '+ prevHeight +'%');
+          this.$el.parent().css('flex', '0 1 '+ newHeightTop +'%');
         }
       } else if (event.hasClass('drag-left')) {
          this.change = arguments[1].position.left - arguments[1].originalPosition.left;
@@ -290,8 +317,6 @@
       if (event.hasClass('drag-top')) {
         if (parseInt(groupNumber) === 0) {
           $('<div id="new"></div>').insertBefore('#' + id);
-        } else {
-          console.log('middle top');
         }
       } else if (event.hasClass('drag-bottom')) {
         console.log('drag bottom just started');
@@ -307,11 +332,16 @@
       }
     },
     onDragStop: function(event, ui) {
+      var currentId = this.$el.parent().attr('id');
+      var prev = $('#' + currentId).prev();
+      var next = $('#' + currentId).next();
       this.$el.find('.drag-top').css('left', '50%');
       this.$el.find('.drag-bottom').css('left', '50%');
       this.$el.find('.drag-left').css('top', '50%');
       this.$el.find('.drag-right').css('top', '50%');
       this.initialHeight = parseInt(this.$el.css('height'));
+      this.prevBasis = parseInt(prev.css('flex-basis'));
+      this.nextBasis = parseInt(next.css('flex-basis'));
       var id = this.$el.parent().attr('id');
       var arrayId = id.split('-');
       arrayId.pop();
@@ -358,9 +388,8 @@
            $('#' + cssId2).remove();
            app.coop('update-data', options2);
         }
-
-
-      } else if (parseInt(groupNumber) === 0) {
+      }
+      if (parseInt(groupNumber) === 0) {
         if (event.hasClass('drag-top')) {
           var topData = {
             template: 'Add',
@@ -385,6 +414,7 @@
            app.store.set(viewAndRegion, allBoxes);
            var topcssId = viewAndRegion + '-' + name[1] + '-' + groupNumber + '-css';
            $('#' + topcssId).remove();
+           console.log('in top before stop');
            app.coop('update-data', topOptions);
         } else if (event.hasClass('drag-left')) {
           console.log('drag left stopped');
