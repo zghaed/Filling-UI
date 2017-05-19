@@ -149,6 +149,7 @@
       }
     },
     onReady: function() {
+      this.$el.find('.region-group').css('height', this.$el.parent().height());
       var self = this,
         name = this.get('name').split('/'),
         boxName = name.pop(),
@@ -209,10 +210,10 @@
   var Group = app.view('Group', {
     template: [
       '<div class="ui-draggable-item drag-top"></div>',
-      //  '<div class="ui-draggable-item drag-left"></div>',
+      '<div class="ui-draggable-item drag-left"></div>',
       '<div region="content"></div>',
+      '<div class="ui-draggable-item drag-right"></div>',
       '<div class="ui-draggable-item drag-bottom"></div>',
-      //  '<div class="ui-draggable-item drag-right"></div>',
     //  '<div region="add"></div>',
     ],
     dnd: {
@@ -220,31 +221,9 @@
         helper: 'original'
       }
     },
-    flag: true,
+    heightFlag: true,
+  //  widthFlag: true,
     onDrag: function(event, ui) {
-      var currentHeight;
-      if (event.hasClass('drag-bottom')) {
-         this.change = arguments[1].originalPosition.top  - arguments[1].position.top;
-         this.$el.css('height', arguments[1].position.top + this.$el.find('.drag-bottom').height());
-      } else if (event.hasClass('drag-top')) {
-      //  this.$el.find('.drag-top').css('top', 0);
-        this.$el.css('top', this.initialTop + arguments[1].position.top);
-        this.$el.find('.drag-top').css('top', 0);
-        this.change = arguments[1].position.top - arguments[1].originalPosition.top;
-        if (this.flag) {
-          this.initialHeight = this.$el.height();
-          this.flag = false;
-        }
-        this.$el.css('height', this.initialHeight - this.change);
-      }
-    },
-    onDragStop: function(event, ui) {
-      //TODO: Disable creating new group for middle dragging
-      this.$el.find('.drag-top').css('left', '50%');
-      this.$el.find('.drag-bottom').css('left', '50%');
-      this.initialHeight = parseInt(this.$el.css('height'));
-      this.initialTop = parseInt(this.$el.css('top'));
-    //  debugger;
       var id = this.$el.parent().attr('id');
       var arrayId = id.split('-');
       arrayId.pop();
@@ -254,49 +233,176 @@
         addGroup = allBoxes[name[1]],
         last = addGroup.length - 1;
         groupNumber = arrayId.pop();
-      if (parseInt(groupNumber) === 0 || parseInt(groupNumber) === last) {
-        var newData = {
-          template: 'Add',
-          data: '',
-          css: 'height:' + this.change + 'px;position:relative;.regional-group{position:relative;height:100%;width:100%;}',
-          direction: 'v'
-        };
+      if (event.hasClass('drag-bottom')) {
+        if (parseInt(groupNumber) === last) {
+          if (this.heightFlag) {
+            this.initialHeight = this.$el.height();
+            this.heightFlag = false;
+            this.initialBasis = parseInt(this.$el.parent().css('flex-basis'));
+          }
+           this.change = arguments[1].originalPosition.top  - arguments[1].position.top;
+           var newBottomHeight = parseInt(this.change/this.initialHeight*this.initialBasis);
+           var bottomHeight = this.initialBasis - newBottomHeight;
+           $('#new').css('flex', '0 1 '+ newBottomHeight +'%');
+           this.$el.parent().css('flex', '0 1 '+ bottomHeight +'%');
+        } else {
+          console.log('between bottom');
+        }
+      } else if (event.hasClass('drag-top')) {
+        if (parseInt(groupNumber) === 0) {
+          if (this.heightFlag) {
+            this.initialHeight = this.$el.height();
+            this.heightFlag = false;
+            this.initialBasis = parseInt(this.$el.parent().css('flex-basis'));
+          }
+          this.change = arguments[1].position.top - arguments[1].originalPosition.top;
+          var newTopHeight = parseInt(this.change/this.initialHeight*this.initialBasis);
+          var newHeight = this.initialBasis - newTopHeight;
+          $('#new').css('flex', '0 1 '+ newTopHeight +'%');
+          this.$el.parent().css('flex', '0 1 '+ newHeight +'%');
+        } else {
+          console.log('between top');
+        }
+      } else if (event.hasClass('drag-left')) {
+         this.change = arguments[1].position.left - arguments[1].originalPosition.left;
+        // this.$el.css('left', this.initialLeft + arguments[1].position.left);
+        // this.$el.find('.drag-left').css('left', 0);
+        // if (this.widthFlag) {
+        //   this.initialWidth = this.$el.width();
+        //   this.widthFlag = false;
+        // }
+        // this.$el.css('width', this.initialWidth - this.change);
+      } else if (event.hasClass('drag-right')) {
+         this.change = arguments[1].originalPosition.left - arguments[1].position.left;
+        // this.$el.css('width', arguments[1].position.left - parseInt(this.$el.find('.drag-left').css('left')));
+      }
+    },
+    onDragStart: function(event, ui) {
+      var id = this.$el.parent().attr('id');
+      var arrayId = id.split('-');
+      arrayId.pop();
+      var name = this.get('name').split('/'),
+        viewAndRegion = name[0],
+        allBoxes = app.store.get(viewAndRegion),
+        addGroup = allBoxes[name[1]],
+        last = addGroup.length - 1;
+        groupNumber = arrayId.pop();
+      if (event.hasClass('drag-top')) {
+        if (parseInt(groupNumber) === 0) {
+          $('<div id="new"></div>').insertBefore('#' + id);
+        } else {
+          console.log('middle top');
+        }
+      } else if (event.hasClass('drag-bottom')) {
+        console.log('drag bottom just started');
+        if (parseInt(groupNumber) === last) {
+          $('<div id="new"></div>').insertAfter('#' + id);
+        } else {
+          console.log('middle bottom');
+        }
+      } else if (event.hasClass('drag-left')) {
+        console.log('drag left just started');
+      } else if (event.hasClass('drag-right')) {
+        console.log('drag right just started');
+      }
+    },
+    onDragStop: function(event, ui) {
+      this.$el.find('.drag-top').css('left', '50%');
+      this.$el.find('.drag-bottom').css('left', '50%');
+      this.$el.find('.drag-left').css('top', '50%');
+      this.$el.find('.drag-right').css('top', '50%');
+      this.initialHeight = parseInt(this.$el.css('height'));
+      var id = this.$el.parent().attr('id');
+      var arrayId = id.split('-');
+      arrayId.pop();
+      var name = this.get('name').split('/'),
+        viewAndRegion = name[0],
+        allBoxes = app.store.get(viewAndRegion),
+        addGroup = allBoxes[name[1]],
+        last = addGroup.length - 1;
+        groupNumber = arrayId.pop();
+      if (parseInt(groupNumber) === last) {
+        if (event.hasClass('drag-bottom')) {
+          var bottomData = {
+            template: 'Add',
+            data: '',
+            css: 'flex: ' + $('#new').css('flex') + ';',
+            direction: 'v'
+          };
+          var editedDataBottom = {
+            template: addGroup[0].template,
+            data: addGroup[0].data,
+            css: 'flex: '+ this.$el.parent().css('flex') + ';',
+            direction: addGroup[0].direction
+          };
+          addGroup.pop();
+          addGroup.push(editedDataBottom);
+          addGroup.push(bottomData);
+          allBoxes[name[1]] = addGroup;
+          var options2 = {
+            newBoxes: allBoxes[name[1]],
+            name: this.get('name')
+          };
+           app.store.set(viewAndRegion, allBoxes);
+           var cssId2 = viewAndRegion + '-' + name[1] + '-' + groupNumber + '-css';
+           $('#' + cssId2).remove();
+           app.coop('update-data', options2);
+        } else if (event.hasClass('drag-right')) {
+          allBoxes[name[1]] = addGroup;
+          var options2 = {
+            newBoxes: allBoxes[name[1]],
+            name: this.get('name')
+          };
+           app.store.set(viewAndRegion, allBoxes);
+           var cssId2 = viewAndRegion + '-' + name[1] + '-' + groupNumber + '-css';
+           $('#' + cssId2).remove();
+           app.coop('update-data', options2);
+        }
+
+
+      } else if (parseInt(groupNumber) === 0) {
         if (event.hasClass('drag-top')) {
+          var topData = {
+            template: 'Add',
+            data: '',
+            css: 'flex: ' + $('#new').css('flex') + ';',
+            direction: 'v'
+          };
           var editedDataTop = {
             template: addGroup[0].template,
             data: addGroup[0].data,
-            css: 'height:' + this.initialHeight + 'px;position:relative;.regional-group{position:relative;height:100%;width:100%;}',
+            css: 'flex: '+ this.$el.parent().css('flex') + ';',
             direction: addGroup[0].direction
           };
           addGroup.shift();
           addGroup.unshift(editedDataTop);
-          addGroup.unshift(newData);
-        } else if (event.hasClass('drag-bottom')){
-          var index = addGroup.length - 1;
-          var editedDataBottom = {
-            template: addGroup[index].template,
-            data: addGroup[index].data,
-            css: 'height:' + this.initialHeight + 'px;position:relative;.regional-group{position:relative;height:100%;width:100%;}',
-            direction: addGroup[index].direction
+          addGroup.unshift(topData);
+          allBoxes[name[1]] = addGroup;
+          var topOptions = {
+            newBoxes: allBoxes[name[1]],
+            name: this.get('name')
           };
-          addGroup.pop();
-          addGroup.push(editedDataBottom);
-          addGroup.push(newData);
+           app.store.set(viewAndRegion, allBoxes);
+           var topcssId = viewAndRegion + '-' + name[1] + '-' + groupNumber + '-css';
+           $('#' + topcssId).remove();
+           app.coop('update-data', topOptions);
+        } else if (event.hasClass('drag-left')) {
+          console.log('drag left stopped');
+          allBoxes[name[1]] = addGroup;
+          var leftOptions = {
+            newBoxes: allBoxes[name[1]],
+            name: this.get('name')
+          };
+           app.store.set(viewAndRegion, allBoxes);
+           var leftcssId = viewAndRegion + '-' + name[1] + '-' + groupNumber + '-css';
+           $('#' + leftcssId).remove();
+           app.coop('update-data', leftOptions);
         }
-        allBoxes[name[1]] = addGroup;
-        var options = {
-          newBoxes: allBoxes[name[1]],
-          name: this.get('name')
-        };
-         app.store.set(viewAndRegion, allBoxes);
-         var cssId = viewAndRegion + '-' + name[1] + '-' + groupNumber + '-css';
-         $('#' + cssId).remove();
-         app.coop('update-data', options);
-      } else {
-        console.log('middle box is changed', groupNumber===last);
+
       }
     },
     onReady: function() {
+      this.$el.css('height', '100%');
       if (this.get('template') !== '') {
         var theTemplateScript = this.get('template'),
           inputData = this.get('data'),
@@ -326,9 +432,11 @@
       // this.show('add', AddButton, {
       //   data: addData
       // });
-      this.$el.find('.drag-top').css('left', '50%');
-      this.$el.find('.drag-bottom').css('left', '50%');
-      this.initialTop = 0;
+      this.$el.find('.drag-top').css('left', '50%', 'important');
+      this.$el.find('.drag-bottom').css('left', '50%', 'important');
+      this.$el.find('.drag-left').css('top', '50%', 'important');
+      this.$el.find('.drag-right').css('top', '50%', 'important');
+      // this.initialLeft = 0;
     }
   });
 
@@ -336,7 +444,6 @@
     template: [
       '<div region="view-lock" action-click="edit-element">{{{element}}}</div>',
     ],
-
     actions: {
       'edit-element': function($btn) {
         var obj = this.get('obj');

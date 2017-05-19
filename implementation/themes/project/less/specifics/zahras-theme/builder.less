@@ -113,12 +113,14 @@
 }
 
 .region-middle-box .region-group .regional-group {
-  flex: 0 1 auto;
-  display: flex;
-  flex-direction: column;
-  flex-wrap: nowrap;
-  justify-content: flex-start;
-  align-content: flex-start;
+  height: 100%;
+  position: relative;
+  // flex: 0 1 auto;
+  // display: flex;
+  // flex-direction: column;
+  // flex-wrap: nowrap;
+  // justify-content: flex-start;
+  // align-content: flex-start;
 }
 
 // .region-content {
@@ -130,9 +132,9 @@
   cursor: ns-resize;
   border-bottom-left-radius: 90px;
   border-bottom-right-radius: 90px;
-  height: 0.5em;
-  width: 1em;
-  top: 0;
+  height: 0.5em !important;
+  width: 1em !important;
+  top: 0 !important;
   background-color: lightgrey;
 }
 
@@ -141,31 +143,31 @@
   cursor: ns-resize;
   border-top-left-radius: 90px;
   border-top-right-radius: 90px;
-  height: 0.5em;
-  width: 1em;
+  height: 0.5em !important;
+  width: 1em !important;
   bottom: 0;
   background-color: lightgrey;
 }
 
 .drag-left {
   position: absolute;
-  cursor: ns-resize;
-  border-bottom-left-radius: 90px;
-  border-top-left-radius: 90px;
-  height: 0.5em;
-  width: 1em;
-  top: 0px;
-  bottom: 0px;
+  cursor: ew-resize;
+  border-bottom-right-radius: 90px;
+  border-top-right-radius: 90px;
+  height: 1em !important;
+  width: 0.5em !important;
+  left: 0;
   background-color: lightgrey;
 }
 
 .drag-right {
   position: absolute;
-  cursor: ns-resize;
-  border-bottom-right-radius: 90px;
-  border-top-right-radius: 90px;
-  height: 0.5em;
-  width: 1em;
+  cursor: ew-resize;
+  border-bottom-left-radius: 90px;
+  border-top-left-radius: 90px;
+  height: 1em !important;
+  width: 0.5em !important;
+  right: 0;
   background-color: lightgrey;
 }
 
