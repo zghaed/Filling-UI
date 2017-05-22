@@ -86,6 +86,10 @@
           boxName = this.$el.parent().attr('region'),
           currenctDirection = this.getEditor('direction').getVal();
         if (currenctDirection==='v') {
+          this.$el.find('.drag-bottom').removeClass('hide');
+          this.$el.find('.drag-top').removeClass('hide');
+          this.$el.find('.drag-left').addClass('hide');
+          this.$el.find('.drag-right').addClass('hide');
           groups.css({
             'flex-direction': 'column',
           });
@@ -96,6 +100,10 @@
             });
           }
         } else {
+          this.$el.find('.drag-bottom').addClass('hide');
+          this.$el.find('.drag-top').addClass('hide');
+          this.$el.find('.drag-left').removeClass('hide');
+          this.$el.find('.drag-right').removeClass('hide');
           groups.css({
             'flex-direction': 'row',
           });
@@ -163,6 +171,14 @@
         self.getRegion('group').$el.append('<div id="'+id+'"></div>');
         var group =  new Group({data:box});
         self.spray($('#'+id), group);
+        if (box.direction == 'v') {
+          console.log('group is, ', group.$el);
+          group.$el.find('.drag-left').addClass('hide');
+          group.$el.find('.drag-right').addClass('hide');
+        } else if (box.direction == 'h') {
+          group.$el.find('.drag-top').addClass('hide');
+          group.$el.find('.drag-bottom').addClass('hide');
+        }
         groupNumber = groupNumber + 1;
       });
       if (this.$el.parent().hasClass('region-middle-box')) {
@@ -181,7 +197,6 @@
         var currentDirection = this.get('boxes')[0].direction;
         var groups = this.getRegion('group').$el.children(':first');
         if (currentDirection==='v') {
-          this.getEditor('direction').setVal('v');
           groups.css({
             'flex-direction': 'column',
           });
@@ -320,6 +335,9 @@
         }
       } else if (event.hasClass('drag-bottom')) {
         console.log('drag bottom just started');
+        console.log('dragging bottom');
+        this.$el.find('.drag-left').hide();
+        this.$el.find('.drag-right').hide();
         if (parseInt(groupNumber) === last) {
           $('<div id="new"></div>').insertAfter('#' + id);
         } else {
