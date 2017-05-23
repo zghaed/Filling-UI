@@ -335,6 +335,7 @@
               'flex-direction': 'column',
             });
             app.store.set(viewAndRegion, allBoxes);
+            console.log('drag start bottom', app.store.get(viewAndRegion));
           }
           this.$el.find('.drag-left').hide();
           this.$el.find('.drag-right').hide();
@@ -394,26 +395,28 @@
         direction = 'direction',
         last = addGroup.length - 1;
         groupNumber = arrayId.pop();
-      var data = {
-        template: 'Add',
+      var newData = {
+        template: '',
         data: '',
+        less: '',
         css_container: $('#new').css('flex')
       };
       var editedData = {
-        template: addGroup[0].template,
-        data: addGroup[0].data,
+        template: addGroup[parseInt(groupNumber)].template,
+        data: addGroup[parseInt(groupNumber)].data,
+        less: addGroup[parseInt(groupNumber)].less,
         css_container: this.$el.parent().css('flex')
       };
       if (parseInt(groupNumber) === last) {
         if (event.hasClass('drag-bottom')) {
-          addGroup.pop();
+          addGroup = addGroup.slice(0,-1);
           addGroup.push(editedData);
-          addGroup.push(data);
+          addGroup.push(newData);
           flag = true;
         } else if (event.hasClass('drag-right')) {
-          addGroup.pop();
+          addGroup = addGroup.slice(0,-1);
           addGroup.push(editedData);
-          addGroup.push(data);
+          addGroup.push(newData);
           flag = true;
         }
       }
@@ -421,12 +424,12 @@
         if (event.hasClass('drag-top')) {
           addGroup.shift();
           addGroup.unshift(editedData);
-          addGroup.unshift(data);
+          addGroup.unshift(newData);
           flag = true;
         } else if (event.hasClass('drag-left')) {
           addGroup.shift();
           addGroup.unshift(editedData);
-          addGroup.unshift(data);
+          addGroup.unshift(newData);
           flag = true;
         }
       }
