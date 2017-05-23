@@ -383,8 +383,9 @@
       this.widthFlag = true;
       this.prevBasis = parseInt(prev.css('flex-basis'));
       this.nextBasis = parseInt(next.css('flex-basis'));
-      var id = this.$el.parent().attr('id');
-      var arrayId = id.split('-');
+      var id = this.$el.parent().attr('id'),
+        arrayId = id.split('-'),
+        flag = false;
       arrayId.pop();
       var name = this.get('name').split('/'),
         viewAndRegion = name[0],
@@ -393,107 +394,53 @@
         direction = 'direction',
         last = addGroup.length - 1;
         groupNumber = arrayId.pop();
+      var data = {
+        template: 'Add',
+        data: '',
+        css_container: $('#new').css('flex')
+      };
+      var editedData = {
+        template: addGroup[0].template,
+        data: addGroup[0].data,
+        css_container: this.$el.parent().css('flex')
+      };
       if (parseInt(groupNumber) === last) {
         if (event.hasClass('drag-bottom')) {
-          var bottomData = {
-            template: 'Add',
-            data: '',
-            css: 'flex: ' + $('#new').css('flex') + ';',
-          };
-          var editedDataBottom = {
-            template: addGroup[0].template,
-            data: addGroup[0].data,
-            css: 'flex: '+ this.$el.parent().css('flex') + ';',
-          };
           addGroup.pop();
-          addGroup.push(editedDataBottom);
-          addGroup.push(bottomData);
-          allBoxes[name[1]] = addGroup;
-          var bottomOptions = {
-            newBoxes: allBoxes[name[1]],
-            direction: allBoxes[direction],
-            name: this.get('name')
-          };
-           app.store.set(viewAndRegion, allBoxes);
-           var bottomCssId = viewAndRegion + '-' + name[1] + '-' + groupNumber + '-css';
-           $('#' + bottomCssId).remove();
-           app.coop('update-data', bottomOptions);
+          addGroup.push(editedData);
+          addGroup.push(data);
+          flag = true;
         } else if (event.hasClass('drag-right')) {
-          var rightData = {
-            template: 'Add',
-            data: '',
-            css: 'flex: ' + $('#new').css('flex') + ';',
-          };
-          var editedDataRight = {
-            template: addGroup[0].template,
-            data: addGroup[0].data,
-            css: 'flex: '+ this.$el.parent().css('flex') + ';',
-          };
           addGroup.pop();
-          addGroup.push(editedDataRight);
-          addGroup.push(rightData);
-          allBoxes[name[1]] = addGroup;
-          var rightOptions = {
-            newBoxes: allBoxes[name[1]],
-            direction: allBoxes[direction],
-            name: this.get('name')
-          };
-           app.store.set(viewAndRegion, allBoxes);
-           var rightCssId = viewAndRegion + '-' + name[1] + '-' + groupNumber + '-css';
-           $('#' + rightCssId).remove();
-           app.coop('update-data', rightOptions);
+          addGroup.push(editedData);
+          addGroup.push(data);
+          flag = true;
         }
       }
       if (parseInt(groupNumber) === 0) {
         if (event.hasClass('drag-top')) {
-          var topData = {
-            template: 'Add',
-            data: '',
-            css: 'flex: ' + $('#new').css('flex') + ';',
-          };
-          var editedDataTop = {
-            template: addGroup[0].template,
-            data: addGroup[0].data,
-            css: 'flex: '+ this.$el.parent().css('flex') + ';',
-          };
           addGroup.shift();
-          addGroup.unshift(editedDataTop);
-          addGroup.unshift(topData);
-          allBoxes[name[1]] = addGroup;
-          var topOptions = {
-            newBoxes: allBoxes[name[1]],
-            direction: allBoxes[direction],
-            name: this.get('name')
-          };
-           app.store.set(viewAndRegion, allBoxes);
-           var topcssId = viewAndRegion + '-' + name[1] + '-' + groupNumber + '-css';
-           $('#' + topcssId).remove();
-           app.coop('update-data', topOptions);
+          addGroup.unshift(editedData);
+          addGroup.unshift(data);
+          flag = true;
         } else if (event.hasClass('drag-left')) {
-          var leftData = {
-            template: 'Add',
-            data: '',
-            css: 'flex: ' + $('#new').css('flex') + ';',
-          };
-          var editedDataLeft = {
-            template: addGroup[0].template,
-            data: addGroup[0].data,
-            css: 'flex: '+ this.$el.parent().css('flex') + ';',
-          };
           addGroup.shift();
-          addGroup.unshift(editedDataLeft);
-          addGroup.unshift(leftData);
-          allBoxes[name[1]] = addGroup;
-          var leftOptions = {
-            newBoxes: allBoxes[name[1]],
-            direction: allBoxes[direction],
-            name: this.get('name')
-          };
-           app.store.set(viewAndRegion, allBoxes);
-           var leftCssId = viewAndRegion + '-' + name[1] + '-' + groupNumber + '-css';
-           $('#' + leftCssId).remove();
-           app.coop('update-data', leftOptions);
+          addGroup.unshift(editedData);
+          addGroup.unshift(data);
+          flag = true;
         }
+      }
+      if (flag === true) {
+        allBoxes[name[1]] = addGroup;
+        var options = {
+          newBoxes: allBoxes[name[1]],
+          direction: allBoxes[direction],
+          name: this.get('name')
+        };
+        app.store.set(viewAndRegion, allBoxes);
+        var cssId = viewAndRegion + '-' + name[1] + '-' + groupNumber + '-css';
+        $('#' + cssId).remove();
+        app.coop('update-data', options);
       }
     },
     onReady: function() {
@@ -537,7 +484,8 @@
             type: 'edit',
             html: obj.template,
             data: obj.data,
-            css:  obj.css,
+            css_container:  obj.css_container,
+            less: obj.less,
             obj:  obj
           }
         })).popover($btn, {placement: 'top', bond: this, style: {width: '600px'}});
@@ -548,10 +496,10 @@
         boxName = name.pop(),
         viewAndRegion = name[0],
         uniqueId = viewAndRegion + '-' + boxName + '-' + this.get('obj').groupNumber ;
-      if (this.get('obj').css) {
+      if (this.get('obj').less) {
         this.$el.attr('id', uniqueId);
         var theme = $('head link[rel="stylesheet"]').attr('href').split('/')[1],
-          less = '#' + uniqueId + '-id {' + this.get('obj').css + '}',
+          less = '#' + uniqueId + '-id {' + this.get('obj').less + '}',
           self = this;
         if (self.flag === undefined) {
           self.flag = true;
@@ -574,21 +522,8 @@
         var uniqueCSS = uniqueId + '-css';
         $('#' +  uniqueCSS).remove();
       }
-    }
-  });
-
-  var AddButton = app.view({
-    template: [
-      '<div class="add-button" action-click="add-element" data-placement="bottom"><i class="fa fa-plus-circle fa-lg"></i></div>'
-    ],
-    actions: {
-      'add-element': function($btn) {
-        (new PopOver({
-          data: {
-            type: 'add',
-            obj: this.get('obj')
-          }
-        })).popover($btn, {placement: 'top', bond: this, style: {width: '600px'}});
+      if (this.get('obj').css_container) {
+        $('#' + uniqueId + '-id').css('flex', this.get('obj').css_container);
       }
     }
   });
@@ -600,7 +535,7 @@
       '<div class="form form-horizontal">',
       '<ul class="nav nav-tabs">',
       '<li activate="single" tabid="html"><a>html</a></li>',
-      '<li activate="single" tabid="css"><a>css</a></li>',
+      '<li activate="single" tabid="less"><a>less</a></li>',
       '</ul>',
       '<div region="tabs"></div>',
       '<div editor="data"></div>',
@@ -662,9 +597,10 @@
             var allBoxes = app.store.get(viewAndRegion),
               editRegionBoxes = allBoxes[boxName],
               editedObj = {
-                template:    this.getViewIn('tabs').$el.find('[region="tab-html"] [editor="code"] textarea').val(),
-                data:        this.getEditor('data').getVal(),
-                css:         this.getViewIn('tabs').$el.find('[region="tab-css"] [editor="code"] textarea').val(),
+                template:      this.getViewIn('tabs').$el.find('[region="tab-html"] [editor="code"] textarea').val(),
+                data:          this.getEditor('data').getVal(),
+                less:          this.getViewIn('tabs').$el.find('[region="tab-less"] [editor="code"] textarea').val(),
+                css_container: obj.css_container
               };
             editRegionBoxes[groupNumber] = editedObj;
             allBoxes[boxName] = editRegionBoxes;
@@ -679,9 +615,10 @@
           } else {
             //Adding an element
             var newObj = {
-              template:    this.getViewIn('tabs').$el.find('[region="tab-html"] [editor="code"] textarea').val(),
-              data:        this.getEditor('data').getVal(),
-              css:         this.getViewIn('tabs').$el.find('[region="tab-css"] [editor="code"] textarea').val(),
+              template:      this.getViewIn('tabs').$el.find('[region="tab-html"] [editor="code"] textarea').val(),
+              data:          this.getEditor('data').getVal(),
+              less:          this.getViewIn('tabs').$el.find('[region="tab-less"] [editor="code"] textarea').val(),
+              css_container: obj.css_container
             },
               cacheData = app.store.get(viewAndRegion),
               addRegionBoxes = cacheData[boxName];
@@ -717,7 +654,8 @@
           groupNumber = obj.groupNumber,
           template = obj.template,
           data = obj.data,
-          css = obj.css,
+          css_container = obj.css_container,
+          less = obj.less,
           direction = 'direction',
           cacheData = app.store.get(viewAndRegion),
           deleteRegionBoxes = cacheData[boxName];
@@ -742,7 +680,7 @@
     },
     onReady: function() {
       this.$el.find('[tabid="html"]').addClass('active');
-      var tabids = ['css', 'html'],
+      var tabids = ['less', 'html'],
         self = this;
       _.map(tabids, function(tabid) {
         self.tab('tabs', app.view({

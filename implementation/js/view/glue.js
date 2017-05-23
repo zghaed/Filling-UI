@@ -1,5 +1,4 @@
 ;(function(app) {
-
   app.view('Glue', {
     template: '<div region="glue-region" action-contextmenu="show-builder"></div>',
     onNavigateTo: function(path) {
@@ -25,7 +24,7 @@
           });
           app.store.set(cacheName, app.store.get(cacheName) || {
             'middle-box':
-            [{'template': '', 'data':'', 'css':'flex:0 1 100%;'},],
+            [{'template': '', 'data':'', 'less':'', 'css_container':'0 1 100%'},],
             'direction': ''
           });
           this.spray(target, builder);
@@ -61,7 +60,7 @@
           });
           app.store.set(key, app.store.get(key) || {
             'middle-box':
-              [{'template': '', 'data':'', 'css':'flex:0 1 100%;'},],
+              [{'template': '', 'data':'', 'less':'', 'css_container':'0 1 100%'},],
             'direction': ''
           });
           var nameArray = key.split('-');
