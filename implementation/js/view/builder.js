@@ -87,12 +87,6 @@
           groups.css({
             'flex-direction': 'column',
           });
-          // var rowChildren = groups.children();
-          // for (var i=0; i<rowChildren.length; i++) {
-          //   $(rowChildren[i]).find('.regional-group').css({
-          //     'flex-direction': 'column',
-          //   });
-          // }
         } else {
           this.$el.find('.drag-bottom').addClass('hide');
           this.$el.find('.drag-top').addClass('hide');
@@ -101,12 +95,6 @@
           groups.css({
             'flex-direction': 'row',
           });
-          // var columnChildren = groups.children();
-          // for (var j=0; j<columnChildren.length; j++) {
-          //   $(columnChildren[j]).find('.regional-group').css({
-          //     'flex-direction': 'row',
-          //   });
-          // }
         }
         var name = this.get('name').split('/'),
           viewAndRegion = name[0],
@@ -125,9 +113,6 @@
     //     currentBuilder.find('[action-click="edit-element"]').toggleClass('toggle-pointer', this._preview);
     //     currentBuilder.find('.add-button').toggleClass('toggle-preview', this._preview);
     //     currentBuilder.find('.direction').toggleClass('toggle-preview', this._preview);
-    //     currentBuilder.find('.triangle-top-left-box').toggleClass('toggle-preview', this._preview);
-    //     currentBuilder.find('.triangle-top-right-box').toggleClass('toggle-preview', this._preview);
-    //     currentBuilder.find('.triangle-bottom-right-box').toggleClass('toggle-preview', this._preview);
     //     currentBuilder.find('.area').toggleClass('toggle-borders', this._preview);
       }
     },
@@ -160,7 +145,6 @@
           }
         }
       }
-      //TODO: add direction and consider height of change direction
       if (this.get('boxes').length > 0) {
         this.$el.children('.direction').removeClass('hide');
         this.$el.parent().removeClass('hide');
@@ -355,8 +339,6 @@
           this.$el.find('.drag-left').hide();
           this.$el.find('.drag-right').hide();
           $('<div id="new"></div>').insertAfter('#' + id);
-        } else {
-          console.log('middle bottom');
         }
       } else if (event.hasClass('drag-left')) {
         if (parseInt(groupNumber) === 0) {
@@ -372,7 +354,6 @@
           $('<div id="new"></div>').insertBefore('#' + id);
         }
       } else if (event.hasClass('drag-right')) {
-        console.log('drag right just started');
         if (parseInt(groupNumber) === last) {
           if (last === 0) {
             allBoxes[direction] = 'h';
@@ -397,6 +378,9 @@
       this.$el.find('.drag-right').css('top', '50%');
       this.initialHeight = parseInt(this.$el.css('height'));
       this.initialWidth = parseInt(this.$el.css('width'));
+      this.initialBasis = parseInt(this.$el.parent().css('flex-basis'));
+      this.heightFlag = true;
+      this.widthFlag = true;
       this.prevBasis = parseInt(prev.css('flex-basis'));
       this.nextBasis = parseInt(next.css('flex-basis'));
       var id = this.$el.parent().attr('id');
@@ -749,7 +733,6 @@
           app.store.set(viewAndRegion, cacheData);
         } else {
           app.store.set(viewAndRegion);
-        //  $('[region='+ region + ']').children(':first').remove();
         }
         var cssId = viewAndRegion + '-' + boxName + '-' + groupNumber + '-css';
         $('#' + cssId).remove();
