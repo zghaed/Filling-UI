@@ -15,25 +15,18 @@
           height = target.height(),
           cacheName = this.getViewIn('glue-region').name + '-' + target.attr('region'),
           regions = (target.attr('region') === undefined) ||
-            (target.attr('region') === ('middle-box' || 'top-left-box' || 'top-right-box' || 'bottom-right-box')),
+            (target.attr('region') === ('middle-box')),
           allCaches = app.store.getAll();
-          console.log('all', allCaches, cacheName);
         if (!(allCaches[cacheName] || regions)) {
-          console.log('height, ');
           var builder = app.get('Builder').create({
             data: {
               "name" : cacheName
              }
           });
           app.store.set(cacheName, app.store.get(cacheName) || {
-            // 'top-left-box':
-            //   [{'template': '', 'data':'', 'css':'', 'direction':'h'}],
-            // 'top-right-box':
-            //   [{'template': '', 'data':'', 'css':'', 'direction':'h'}],
             'middle-box':
-            [{'template': 'bye', 'data':'', 'css':'flex:0 1 100%;', 'direction':'v'},],
-            // 'bottom-right-box':
-            //   [{'template': '', 'data':'', 'css':'', 'direction':'h'}]
+            [{'template': '', 'data':'', 'css':'flex:0 1 100%;'},],
+            'direction': ''
           });
           this.spray(target, builder);
         }
@@ -44,7 +37,7 @@
         var caches = app.store.getAll(),
           keys = [],
           viewName = this.getViewIn('glue-region').name,
-          regionNames = ['middle-box'];//['top-left-box', 'top-right-box', 'middle-box', 'bottom-right-box'];
+          regionNames = ['middle-box'];
         _.each(caches, function(val, key) {
           var keyArray = key.split('-');
           if (keyArray[0] === viewName) {
@@ -52,7 +45,6 @@
             _.each(regionNames, function(region) {
               groups += caches[key][region].length;
             });
-            console.log('groups, ', groups);
             if(groups < 1) {
               app.store.set(key);
             } else {
@@ -68,19 +60,13 @@
              }
           });
           app.store.set(key, app.store.get(key) || {
-            // 'top-left-box':
-            //   [{'template': '', 'data':'', 'css':'', 'direction':'h'}],
-            // 'top-right-box':
-            //   [{'template': '', 'data':'', 'css':'', 'direction':'h'}],
             'middle-box':
-              [{'template': 'bye', 'data':'', 'css':'flex:0 1 100%;', 'direction':'v'},],
-            // 'bottom-right-box':
-            //   [{'template': '', 'data':'', 'css':'', 'direction':'h'}]
+              [{'template': '', 'data':'', 'css':'flex:0 1 100%;'},],
+            'direction': ''
           });
           var nameArray = key.split('-');
           nameArray.shift();
           var name = nameArray.join('-');
-
           self.listenToOnce(builder, 'view:box-ready', function() {
             _.each(builder.regions, function(selector, r) {
               var box = builder.getViewIn(r);
@@ -89,7 +75,6 @@
               });
             });
           });
-
           self.spray($('[region="'+name+'"]'), builder);
         });
       }
