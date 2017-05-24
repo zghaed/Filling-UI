@@ -1,13 +1,7 @@
 [region='middle-box'] {
-  flex: 0 1 100%;
-  display: flex;
-  flex-direction: column;
-  flex-wrap: nowrap;
-  order: 3;
-  justify-content: flex-start;
-  align-content: flex-start;
   position: relative;
   overflow: auto;
+  height: 100%;
 }
 
 [region='content'],
@@ -16,14 +10,26 @@
   height: 100%;
 }
 
+[region='string'] {
+  z-index: 1;
+  position: absolute;
+  height: 100%;
+  width: 100%;
+  top: 0;
+  left: 0;
+}
+
 .region-middle-box .regional-box {
   height: 100%;
 }
 
-.region-middle-box .region-group {
+[region='group'] {
   height: 100%;
+  width: 100%;
   flex: 0 1 auto;
   display: flex;
+  z-index: 10;
+  position: absolute;
 }
 
 .region-middle-box .region-group .regional-group {

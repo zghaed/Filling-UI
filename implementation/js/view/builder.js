@@ -1,5 +1,4 @@
 ;(function(app) {
-
   app.view('Builder', {
     template: [
       '<div class="area" region="middle-box"></div>',
@@ -15,20 +14,15 @@
       if(region === this.$el.parent().attr('region')) {
         //TODO: empty array remove existing view
         this.getViewIn(boxName).set({
-          name: options.name,
+          name:      options.name,
           direction: options.direction,
-          boxes: options.newBoxes
+          boxes:     options.newBoxes
         });
       }
     },
     onReady: function() {
       var boxes = app.store.get(this.get('name'));
       this.$el.css({
-        'display': 'flex',
-        'flex-flow': 'row wrap',
-        'justify-content': 'flex-end',
-        'align-content': 'flex-start',
-        'align-items': 'stretch',
         'overflow': 'auto'
       });
       var regionNames = ['middle-box'],
@@ -59,6 +53,7 @@
       '<div class="direction hide" editor="direction" action="change-direction"></div>',
       '<div class="triangle-bottom-left-box hide" ui="toggle-preview" action-click="toggle-preview"></div>',
       '<div region="group"></div>',
+      '<div region="string"></div>',
     ],
     editors: {
       direction: {
@@ -156,23 +151,11 @@
           groups.css({
             'flex-direction': 'column',
           });
-          var rowChildren = groups.children();
-          for (var j=0; j<rowChildren.length; j++) {
-            $(rowChildren[j]).css({
-              'flex-direction': 'column',
-            });
-          }
         } else if (currentDirection==='h') {
           this.getEditor('direction').setVal('h');
           groups.css({
             'flex-direction': 'row',
           });
-          var columnChildren = groups.children();
-          for (var k=0; k<columnChildren.length; k++) {
-            $(columnChildren[k]).css({
-              'flex-direction': 'row',
-            });
-          }
         }
       }
     }
@@ -335,7 +318,6 @@
               'flex-direction': 'column',
             });
             app.store.set(viewAndRegion, allBoxes);
-            console.log('drag start bottom', app.store.get(viewAndRegion));
           }
           this.$el.find('.drag-left').hide();
           this.$el.find('.drag-right').hide();
@@ -399,13 +381,13 @@
         template: '',
         data: '',
         less: '',
-        css_container: $('#new').css('flex')
+        css_container: '0 1 ' + $('#new').css('flex-basis')
       };
       var editedData = {
         template: addGroup[parseInt(groupNumber)].template,
         data: addGroup[parseInt(groupNumber)].data,
         less: addGroup[parseInt(groupNumber)].less,
-        css_container: this.$el.parent().css('flex')
+        css_container: '0 1 ' + this.$el.parent().css('flex-basis')
       };
       if (parseInt(groupNumber) === last) {
         if (event.hasClass('drag-bottom')) {
@@ -477,10 +459,14 @@
 
   var Content = app.view({
     template: [
-      '<div region="view-lock" action-click="edit-element">{{{element}}}</div>',
+      '<div region="view-lock" action="edit-element">{{{element}}}</div>',
     ],
     actions: {
-      'edit-element': function($btn) {
+      'edit-element': function($btn, e) {
+        console.log('just clicked with ctrl', e);
+        if (e.ctrlKey) {
+        console.log('just clicked with ctrl');
+        }
         var obj = this.get('obj');
         (new PopOver({
           data: {
@@ -638,7 +624,7 @@
           }
         } else {
           //TODO: Why this is undefined?
-          console.log('tbas, ', this.getViewIn('tabs').$el.getViewIn('tab-html'));
+          console.log('tabs, ', this.getViewIn('tabs').$el.getViewIn('tab-html'));
           //this.getViewIn('tabs').getViewIn('tab-html').getEditor('code').validate(true);
           this.getEditor('data').validate(true);
         }
