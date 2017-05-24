@@ -13,8 +13,8 @@
         var target = $(e.target),
           height = target.height(),
           cacheName = this.getViewIn('glue-region').name + '-' + target.attr('region'),
-          regions = (target.attr('region') === undefined) ||
-            (target.attr('region') === ('middle-box')),
+          regions = (target.attr('region') === undefined),// ||
+          //  (target.attr('region') === ('middle-box')),
           allCaches = app.store.getAll();
         if (!(allCaches[cacheName] || regions)) {
           var builder = app.get('Builder').create({
@@ -23,7 +23,7 @@
              }
           });
           app.store.set(cacheName, app.store.get(cacheName) || {
-            'middle-box':
+            'groups':
             [{'template': '', 'data':'', 'less':'', 'css_container':'0 1 100%'},],
             'direction': ''
           });
@@ -35,15 +35,15 @@
       if (this.getViewIn('glue-region')) {
         var caches = app.store.getAll(),
           keys = [],
-          viewName = this.getViewIn('glue-region').name,
-          regionNames = ['middle-box'];
+          viewName = this.getViewIn('glue-region').name;
+    //      regionNames = ['middle-box'];
         _.each(caches, function(val, key) {
           var keyArray = key.split('-');
           if (keyArray[0] === viewName) {
-            var groups = 0;
-            _.each(regionNames, function(region) {
-              groups += caches[key][region].length;
-            });
+          //  var groups = 0;
+        //    _.each(regionNames, function(region) {
+            var  groups = caches[key].groups.length;
+        //    });
             if(groups < 1) {
               app.store.set(key);
             } else {
@@ -59,7 +59,7 @@
              }
           });
           app.store.set(key, app.store.get(key) || {
-            'middle-box':
+            'groups':
               [{'template': '', 'data':'', 'less':'', 'css_container':'0 1 100%'},],
             'direction': ''
           });

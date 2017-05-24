@@ -1,13 +1,20 @@
-[region='middle-box'] {
-  position: relative;
-  overflow: auto;
+// [region='content'],
+// [region='content'] > *,
+// [region='content'] > * [region='view-lock'] {
+//   height: 100%;
+// }
+
+[region='group'] {
   height: 100%;
+  width: 100%;
+  // flex: 0 1 auto;
+  display: flex;
+  z-index: 10;
+  //position: absolute;
 }
 
-[region='content'],
-[region='content'] > *,
-[region='content'] > * [region='view-lock'] {
-  height: 100%;
+[region='group'] > * {
+  position: relative;
 }
 
 [region='string'] {
@@ -19,20 +26,7 @@
   left: 0;
 }
 
-.region-middle-box .regional-box {
-  height: 100%;
-}
-
-[region='group'] {
-  height: 100%;
-  width: 100%;
-  flex: 0 1 auto;
-  display: flex;
-  z-index: 10;
-  position: absolute;
-}
-
-.region-middle-box .region-group .regional-group {
+.region-group .regional-group {
   height: 100%;
   position: relative;
   border-style: dotted;
