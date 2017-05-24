@@ -1,9 +1,8 @@
 ;(function(app) {
   app.view('Builder', {
     template: [
-      '<div class="triangle-bottom-left-box hide" ui="toggle-preview" action-click="toggle-preview"></div>',
+      '<div action="add-string" region="string"></div>',
       '<div region="group"></div>',
-    //  '<div region="string"></div>',
     ],
     coop: ['update-data'],
     onUpdateData: function(options) {
@@ -21,6 +20,23 @@
       }
     },
     actions: {
+      'add-string': function($btn, e) {
+        if (e.shiftKey) {
+          console.log('shift click', $btn, e);
+          var stringRegion = this.$el.parent().find('[region="string"]');
+          var newElement = $('<div class="border">TEST</div>');
+          newElement.css({
+            position: 'absolute',
+            top: e.offsetY,
+            left: e.offsetX,
+            width: '6em',
+            height: '3em',
+          });
+          this.$el.parent().parent().parent().find('[region="string"]').append(newElement);
+        } else {
+          console.log('adding groups', this.get());
+        }
+      },
       'change-direction': function() {
         var groups = this.getRegion('group').$el,
           currenctDirection = this.getEditor('direction').getVal();
@@ -47,16 +63,6 @@
           direction = 'direction';
         allGroups.direction = currenctDirection;
         app.store.set(viewAndRegion, allGroups);
-      },
-      'toggle-preview': function() {
-      // app.notify('Action triggered!', 'Direction changed!');
-      // TODO: toggle preview
-      // if(this._preview === undefined)
-      // this._preview = false;
-      // var currentBuilder = this.$el.parent().parent();
-      // this._preview = !this._preview;
-      // currentBuilder.find('[action-click="edit-element"]').toggleClass('toggle-pointer', this._preview);
-      // currentBuilder.find('.direction').toggleClass('toggle-preview', this._preview);
       }
     },
     onReady: function() {
@@ -298,64 +304,78 @@
       this.nextBasis = parseInt(next.css('flex-basis'));
       var id = this.$el.parent().attr('id'),
         arrayId = id.split('-'),
-        flag = false;
+        position = 'middle';
       arrayId.pop();
       var viewAndRegion = this.get('name'),
         allGroups = app.store.get(viewAndRegion),
         addGroup = allGroups.groups,
-        direction = 'direction',
         last = addGroup.length - 1;
         groupNumber = arrayId.pop();
       var newData = {
-        template: '',
+        template: '<span class="glyphicon glyphicon-pencil"></span>',
         data: '',
         less: '',
-        css_container: '0 1 ' + $('#new').css('flex-basis')
+        css_container: {flex: '0 1 ' + $('#new').css('flex-basis'),}
       };
       var editedData = {
         template: addGroup[parseInt(groupNumber)].template,
         data: addGroup[parseInt(groupNumber)].data,
         less: addGroup[parseInt(groupNumber)].less,
-        css_container: '0 1 ' + this.$el.parent().css('flex-basis')
+        css_container: {flex: '0 1 ' + this.$el.parent().css('flex-basis'),}
       };
-      if (parseInt(groupNumber) === last) {
-        if (event.hasClass('drag-bottom')) {
-          addGroup = addGroup.slice(0,-1);
+      if (event.hasClass('drag-bottom')) {
+        if (parseInt(groupNumber) === last) {
+          addGroup = addGroup.slice(0, -1);
           addGroup.push(editedData);
           addGroup.push(newData);
-          flag = true;
-        } else if (event.hasClass('drag-right')) {
-          addGroup = addGroup.slice(0,-1);
-          addGroup.push(editedData);
-          addGroup.push(newData);
-          flag = true;
+        } else {
+          position = 'next';
         }
       }
-      if (parseInt(groupNumber) === 0) {
-        if (event.hasClass('drag-top')) {
+      if (event.hasClass('drag-right')) {
+        if (parseInt(groupNumber) === last) {
+          addGroup = addGroup.slice(0, -1);
+          addGroup.push(editedData);
+          addGroup.push(newData);
+        } else {
+          position = 'next';
+        }
+      }
+      if (event.hasClass('drag-top')) {
+        if (parseInt(groupNumber) === 0) {
           addGroup.shift();
           addGroup.unshift(editedData);
           addGroup.unshift(newData);
-          flag = true;
-        } else if (event.hasClass('drag-left')) {
+        } else {
+          position = 'prev';
+        }
+      }
+      if (event.hasClass('drag-left')) {
+        if (parseInt(groupNumber) === 0) {
           addGroup.shift();
           addGroup.unshift(editedData);
           addGroup.unshift(newData);
-          flag = true;
+        } else {
+          position = 'prev';
         }
       }
-      if (flag === true) {
-        allGroups.groups = addGroup;
-        var options = {
-          newGroups: allGroups.groups,
-          direction: allGroups.direction,
-          name: this.get('name')
-        };
-        app.store.set(viewAndRegion, allGroups);
-        var cssId = viewAndRegion + '-' + groupNumber + '-css';
-        $('#' + cssId).remove();
-        app.coop('update-data', options);
+      if (position === 'prev') {
+        addGroup[parseInt(groupNumber)].css_container = {flex: '0 1 ' + this.$el.parent().css('flex-basis'),};
+        addGroup[parseInt(groupNumber) - 1].css_container = {flex: '0 1 ' + this.prevBasis + '%',};
+      } else if (position === 'next') {
+        addGroup[parseInt(groupNumber)].css_container = {flex: '0 1 ' + this.$el.parent().css('flex-basis'),};
+        addGroup[parseInt(groupNumber) + 1].css_container = {flex: '0 1 ' + this.nextBasis + '%',};
       }
+      allGroups.groups = addGroup;
+      var options = {
+        newGroups: allGroups.groups,
+        direction: allGroups.direction,
+        name: this.get('name')
+      };
+      app.store.set(viewAndRegion, allGroups);
+      var cssId = viewAndRegion + '-' + groupNumber + '-css';
+      $('#' + cssId).remove();
+      app.coop('update-data', options);
     },
     onReady: function() {
       var theTemplateScript = this.get('template'),
@@ -392,10 +412,6 @@
     ],
     actions: {
       'edit-element': function($btn, e) {
-        console.log('just clicked with ctrl', e);
-        if (e.ctrlKey) {
-        console.log('just clicked with ctrl');
-        }
         var obj = this.get('obj');
         (new PopOver({
           data: {
@@ -439,7 +455,7 @@
         $('#' +  uniqueCSS).remove();
       }
       if (this.get('obj').css_container) {
-        $('#' + uniqueId + '-id').css('flex', this.get('obj').css_container);
+        $('#' + uniqueId + '-id').css( this.get('obj').css_container);
       }
     }
   });
@@ -506,47 +522,24 @@
             viewAndRegion = obj.name,
             groupNumber = obj.groupNumber,
             direction = 'direction';
-          if (this.get('type') === 'edit') {
-            //Editing an element
-            var allGroups = app.store.get(viewAndRegion),
-              editRegionGroups = allGroups.groups,
-              editedObj = {
-                template:      this.getViewIn('tabs').$el.find('[region="tab-html"] [editor="code"] textarea').val(),
-                data:          this.getEditor('data').getVal(),
-                less:          this.getViewIn('tabs').$el.find('[region="tab-less"] [editor="code"] textarea').val(),
-                css_container: obj.css_container
-              };
-            editRegionGroups[groupNumber] = editedObj;
-            allGroups.groups = editRegionGroups;
-            var options = {
-              newGroups: allGroups.groups,
-              direction: allGroups.direction,
-              name: obj.name
-            };
-            app.store.set(viewAndRegion, allGroups);
-            app.coop('update-data', options);
-            this.close();
-          } else {
-            //Adding an element
-            var newObj = {
+          var allGroups = app.store.get(viewAndRegion),
+            editRegionGroups = allGroups.groups,
+            editedObj = {
               template:      this.getViewIn('tabs').$el.find('[region="tab-html"] [editor="code"] textarea').val(),
               data:          this.getEditor('data').getVal(),
               less:          this.getViewIn('tabs').$el.find('[region="tab-less"] [editor="code"] textarea').val(),
               css_container: obj.css_container
-            },
-              cacheData = app.store.get(viewAndRegion),
-              addRegionGroups = cacheData.groups;
-            addRegionGroups.splice(groupNumber + 1, 0 , newObj);
-            cacheData.groups = addRegionGroups;
-            var addOptions = {
-              newGroups: cacheData.groups,
-              dirction: cacheData.direction,
-              name: obj.name
             };
-            app.store.set(viewAndRegion, cacheData);
-            app.coop('update-data', addOptions);
-            this.close();
-          }
+          editRegionGroups[groupNumber] = editedObj;
+          allGroups.groups = editRegionGroups;
+          var options = {
+            newGroups: allGroups.groups,
+            direction: allGroups.direction,
+            name: obj.name
+          };
+          app.store.set(viewAndRegion, allGroups);
+          app.coop('update-data', options);
+          this.close();
         } else {
           //TODO: Why this is undefined?
           console.log('tabs, ', this.getViewIn('tabs').$el.getViewIn('tab-html'));
@@ -567,7 +560,6 @@
           data = obj.data,
           css_container = obj.css_container,
           less = obj.less,
-          direction = 'direction',
           cacheData = app.store.get(viewAndRegion),
           deleteRegionGroups = cacheData.groups;
 

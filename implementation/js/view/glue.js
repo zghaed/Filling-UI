@@ -13,8 +13,7 @@
         var target = $(e.target),
           height = target.height(),
           cacheName = this.getViewIn('glue-region').name + '-' + target.attr('region'),
-          regions = (target.attr('region') === undefined),// ||
-          //  (target.attr('region') === ('middle-box')),
+          regions = (target.attr('region') === undefined),
           allCaches = app.store.getAll();
         if (!(allCaches[cacheName] || regions)) {
           var builder = app.get('Builder').create({
@@ -24,7 +23,7 @@
           });
           app.store.set(cacheName, app.store.get(cacheName) || {
             'groups':
-            [{'template': '', 'data':'', 'less':'', 'css_container':'0 1 100%'},],
+            [{'template': '<span class="glyphicon glyphicon-pencil"></span>', 'data':'', 'less':'', 'css_container':{flex: "0 1 100%",}},],
             'direction': ''
           });
           this.spray(target, builder);
@@ -36,14 +35,10 @@
         var caches = app.store.getAll(),
           keys = [],
           viewName = this.getViewIn('glue-region').name;
-    //      regionNames = ['middle-box'];
         _.each(caches, function(val, key) {
           var keyArray = key.split('-');
           if (keyArray[0] === viewName) {
-          //  var groups = 0;
-        //    _.each(regionNames, function(region) {
             var  groups = caches[key].groups.length;
-        //    });
             if(groups < 1) {
               app.store.set(key);
             } else {
@@ -60,7 +55,7 @@
           });
           app.store.set(key, app.store.get(key) || {
             'groups':
-              [{'template': '', 'data':'', 'less':'', 'css_container':'0 1 100%'},],
+              [{'template': '<span class="glyphicon glyphicon-pencil"></span>', 'data':'', 'less':'', 'css_container':{flex: "0 1 100%",}},],
             'direction': ''
           });
           var nameArray = key.split('-');

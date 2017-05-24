@@ -1,16 +1,9 @@
-// [region='content'],
-// [region='content'] > *,
-// [region='content'] > * [region='view-lock'] {
-//   height: 100%;
-// }
-
 [region='group'] {
+  position: absolute;
   height: 100%;
   width: 100%;
-  // flex: 0 1 auto;
   display: flex;
   z-index: 10;
-  //position: absolute;
 }
 
 [region='group'] > * {
@@ -26,12 +19,14 @@
   left: 0;
 }
 
+[region='content'] {
+  height: 100%;
+}
+
 .region-group .regional-group {
   height: 100%;
   position: relative;
-  border-style: dotted;
-  border-width: 2px;
-  border-color: lightgrey;
+  .border
 }
 
 .drag-top {
@@ -80,28 +75,6 @@
   background-color: lightgrey;
 }
 
-.add-button {
-  padding: 0.5em;
-  border-style: dotted;
-  border-width: 2px;
-  border-color: lightgrey;
-}
-
-.triangle-bottom-left-box {
-  width: 0;
-  height: 0;
-  border-color: #2E6DA4 transparent;
-  border-style: solid;
-  border-width: 0 2em 2em 0;
-  position: absolute;
-  left: 0;
-  bottom: 0;
-}
-
-.triangle-show {
-  border-color: #3FB618 transparent;
-}
-
 .delete-group {
   float: right;
 }
@@ -116,4 +89,10 @@
 
 .toggle-pointer {
   pointer-events: none;
+}
+
+.border {
+  border-style: dotted;
+  border-width: 2px;
+  border-color: lightgrey;
 }
