@@ -6,6 +6,7 @@
     ],
     coop: ['update-data'],
     onUpdateData: function(options) {
+      console.log('here options is,', options);
       var ViewAndRegion = options.name,
         nameArray = ViewAndRegion.split('-');
       nameArray.shift();
@@ -15,16 +16,17 @@
         this.set({
           name:      options.name,
           direction: options.direction,
-          groups:    options.newGroups
+          groups:    options.newGroups,
+          strings:   options.newStrings
         });
       }
     },
     actions: {
       'add-string': function($btn, e) {
+        var allGroups = app.store.get(this.get('name')),
+          viewAndRegion = this.get('name');
         if (e.shiftKey) {
-          var allGroups = app.store.get(this.get('name')),
-            viewAndRegion = this.get('name'),
-            stringNumber = allGroups.strings.length;
+          var stringNumber = allGroups.strings.length;
           var stringId = viewAndRegion + '-' + stringNumber + '-string-id';
           var string = {
             template: '',
@@ -48,6 +50,20 @@
           allGroups.strings.push(string);
           app.store.set(viewAndRegion, allGroups);
         } else {
+          var groupNumber = $(e.currentTarget).parent().parent().parent().css('order'),
+            currentGroup = allGroups.groups[groupNumber];
+          currentGroup.name = this.get('name');
+          currentGroup.groupNumber = groupNumber;
+          (new PopOver({
+            data: {
+              type: 'group',
+              html: currentGroup.template,
+              data: currentGroup.data,
+              css_container:  currentGroup.css_container,
+              less: currentGroup.less,
+              obj:  currentGroup
+            }
+          })).popover($(e.currentTarget), {placement: 'top', bond: this, style: {width: '600px'}});
         }
       },
       'change-direction': function() {
@@ -126,8 +142,23 @@
 
   var StringView = app.view('StringView', {
     template: [
-      '<div region="container">{{{template}}}</div>',
+      '<div action-click="edit-string" region="container">{{{template}}}</div>',
     ],
+    actions: {
+      'edit-string': function($btn, e) {
+        console.log('data is, ', this.get());
+        (new PopOver({
+          data: {
+            type: 'string',
+            html: this.get('template'),
+            data: this.get('data'),
+            css_container: this.get('css_container'),
+            less: this.get('less'),
+            obj:  this.get()
+          }
+        })).popover($btn, {placement: 'top', bond: this, style: {width: '600px'}});
+      }
+    },
     onReady: function() {
       var viewAndRegion = this.get('name'),
         uniqueId = viewAndRegion + '-' + this.get('stringNumber') ;
@@ -164,9 +195,9 @@
 
   var Group = app.view('Group', {
     template: [
+      '<div region="content"></div>',
       '<div class="ui-draggable-item drag-top"></div>',
       '<div class="ui-draggable-item drag-left"></div>',
-      '<div region="content"></div>',
       '<div class="ui-draggable-item drag-right"></div>',
       '<div class="ui-draggable-item drag-bottom"></div>',
     ],
@@ -374,7 +405,7 @@
         last = addGroup.length - 1;
         groupNumber = arrayId.pop();
       var newData = {
-        template: '<span class="glyphicon glyphicon-pencil"></span>',
+        template: '',
         data: '',
         less: '',
         css_container: {
@@ -494,24 +525,10 @@
 
   var Content = app.view({
     template: [
-      '<div region="view-lock" action="edit-group">{{{element}}}</div>',
+      '<div region="view-lock" action="add-string">{{{element}}}</div>',
     ],
     actions: {
-      'edit-group': function($btn, e) {
-        e.preventDefault();
-        e.stopPropagation();
-        var obj = this.get('obj');
-        (new PopOver({
-          data: {
-            type: 'edit',
-            html: obj.template,
-            data: obj.data,
-            css_container:  obj.css_container,
-            less: obj.less,
-            obj:  obj
-          }
-        })).popover($btn, {placement: 'top', bond: this, style: {width: '600px'}});
-      }
+      _bubble: true,
     },
     onReady: function() {
       var viewAndRegion = this.get('obj').name,
@@ -608,31 +625,46 @@
           //HTML field is not empty
           var obj = this.get('obj'),
             viewAndRegion = obj.name,
-            groupNumber = obj.groupNumber,
-            direction = 'direction';
-          var allGroups = app.store.get(viewAndRegion),
-            editRegionGroups = allGroups.groups,
+            direction = 'direction',
             editedObj = {
               template:      this.getViewIn('tabs').$el.find('[region="tab-html"] [editor="code"] textarea').val(),
               data:          this.getEditor('data').getVal(),
               less:          this.getViewIn('tabs').$el.find('[region="tab-less"] [editor="code"] textarea').val(),
               css_container: obj.css_container
             };
-          editRegionGroups[groupNumber] = editedObj;
-          allGroups.groups = editRegionGroups;
+          var allGroups = app.store.get(viewAndRegion),
+            editedSObj = {
+              template:      this.getViewIn('tabs').$el.find('[region="tab-html"] [editor="code"] textarea').val(),
+              data:          this.getEditor('data').getVal(),
+              less:          this.getViewIn('tabs').$el.find('[region="tab-less"] [editor="code"] textarea').val(),
+              css_container: obj.css_container
+            };
+          if (this.get('type')==='group') {
+            var editRegionGroups = allGroups.groups,
+              groupNumber = obj.groupNumber;
+            editRegionGroups[groupNumber] = editedObj;
+            allGroups.groups = editRegionGroups;
+          } else if (this.get('type') === 'string') {
+            var editRegionStrings = allGroups.strings,
+                stringNumber = obj.stringNumber;
+            editRegionStrings[stringNumber] = editedObj;
+            allGroups.strings = editRegionStrings;
+          }
           var options = {
             newGroups: allGroups.groups,
+            newStrings: allGroups.strings,
             direction: allGroups.direction,
             name: obj.name
           };
           app.store.set(viewAndRegion, allGroups);
-          app.coop('update-data', options);
           this.close();
+          app.coop('update-data', options);
         } else {
           //TODO: Why this is undefined?
           console.log('tabs, ', this.getViewIn('tabs').$el.getViewIn('tab-html'));
           //this.getViewIn('tabs').getViewIn('tab-html').getEditor('code').validate(true);
           this.getEditor('data').validate(true);
+          this.close();
         }
       },
       cancel: function() {

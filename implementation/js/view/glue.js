@@ -23,7 +23,7 @@
           });
           app.store.set(cacheName, app.store.get(cacheName) || {
             'groups': [
-              {'template': '<span class="glyphicon glyphicon-pencil"></span>',
+              {'template': '',
                 'data':'', 'less':'', 'css_container': {
                 'flex-grow': '0',
                 'flex-shrink': '1',
@@ -63,7 +63,7 @@
           });
           app.store.set(key, app.store.get(key) || {
             'groups': [
-              {'template': '<span class="glyphicon glyphicon-pencil"></span>',
+              {'template': '',
                 'data':'', 'less':'', 'css_container': {
                 'flex-grow': '0',
                 'flex-shrink': '1',

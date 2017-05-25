@@ -6,6 +6,18 @@
   z-index: 10;
 }
 
+[region='content'],
+[region='content'] > *,
+[region='string'] .regional-stringview,
+[region='string'] .regional-stringview .region-container{
+  height: 100%;
+}
+
+[region='view-lock'] {
+  height: 100%;
+  width: 100%;
+}
+
 [region='group'] > * {
   position: relative;
 }
@@ -16,6 +28,10 @@
   width: 100%;
   top: 0;
   left: 0;
+}
+
+[region='string'] > * {
+  z-index: 100;
 }
 
 [region="view-lock"] {
