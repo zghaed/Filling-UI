@@ -9,7 +9,7 @@
 [region='content'],
 [region='content'] > *,
 [region='string'] .regional-stringview,
-[region='string'] .regional-stringview .region-container{
+[region='string'] .regional-stringview .region-string-container {
   height: 100%;
 }
 
@@ -88,6 +88,11 @@
   right: 0 !important;
   left: auto !important;
   background-color: lightgrey;
+}
+
+[region="tab-html"] textarea,
+[region="tab-less"] textarea {
+  height: 200px;
 }
 
 .delete-group {

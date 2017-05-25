@@ -142,9 +142,35 @@
       var builderName = this.get('name'),
         groups = app.store.get(builderName),
         stacks = groups.groups,
-        strings = groups.strings;
-      console.log('hello api', this.get());
-      return 'bye';
+        strings = groups.strings,
+        stringNumber = 0,
+        stackNumber = 0,
+        allTemplate = $('<div></div>');
+    allTemplate.append('<div region="string"></div>');
+    allTemplate.append('<div region="group"></div>');
+    _.each(stacks, function(stack) {
+      if (stack.template) {
+        var stackId = builderName + '-' + stackNumber + '-id',
+          stackDiv = '<div id ="' + stackId + '">' + stack.template + '</div>';
+        if (stack.data) {
+          stackDiv = '{{#' + stack.data + '}}' + stackDiv + '{{/' + stack.data + '}}';
+        }
+        allTemplate.find('[region="group"]').append(stackDiv);
+      }
+      stackNumber += 1;
+    });
+    _.each(strings, function(string) {
+      if (string.template) {
+        var stringId = builderName + '-' + stringNumber + '-string-id',
+          stringDiv = '<div id ="' + stringId + '">' + string.template + '</div>';
+        if (string.data) {
+          stringDiv = '{{#' + string.data + '}}' + stringDiv + '{{/' + string.data + '}}';
+        }
+        allTemplate.find('[region="string"]').append(stringDiv);
+      }
+      stringNumber += 1;
+    });
+    return allTemplate.html();
     },
     extractLess: function() {
       var builderName = this.get('name'),
@@ -152,18 +178,22 @@
         stacks = groups.groups,
         strings = groups.strings,
         stringNumber = 0,
-        groupNumber = 0,
+        stackNumber = 0,
         allLess = '';
       _.each(stacks, function(stack) {
-        var cssId = builderName + '-' + groupNumber + '-css',
-          currentLess = '#' + cssId + '{' + stack.less + '}';
-        allLess += currentLess;
-        groupNumber += 1;
+        if (stack.less) {
+          var cssId = builderName + '-' + stackNumber + '-css',
+            currentLess = '#' + cssId + '{' + stack.less + '}';
+          allLess += currentLess;
+        }
+        stackNumber += 1;
       });
       _.each(strings, function(string) {
-        var cssId = builderName + '-' + stringNumber + '-string-css',
-          currentLess = '#' + cssId + '{' + string.less + '}';
-        allLess += currentLess;
+        if (string.less) {
+          var cssId = builderName + '-' + stringNumber + '-string-css',
+            currentLess = '#' + cssId + '{' + string.less + '}';
+          allLess += currentLess;
+        }
         stringNumber += 1;
       });
       return allLess;
@@ -172,7 +202,7 @@
 
   var StringView = app.view('StringView', {
     template: [
-      '<div action-click="edit-string" region="container">{{{template}}}</div>',
+      '<div action-click="edit-string" region="string-container">{{{template}}}</div>',
     ],
     actions: {
       'edit-string': function($btn, e) {
@@ -198,7 +228,7 @@
         if (self.flag === undefined) {
           self.flag = true;
         }
-        self.lock('view-lock', self.flag, 'fa fa-spinner fa-spin fa-3x');
+        self.lock('string-container', self.flag, 'fa fa-spinner fa-spin fa-3x');
         self.flag = !self.flag;
         app.remote({
           url: 'api/test',
@@ -207,7 +237,7 @@
             theme: theme
           }
         }).done(function(data) {
-          self.lock('view-lock', self.flag, 'fa fa-spinner fa-spin fa-3x');
+          self.lock('string-container', self.flag, 'fa fa-spinner fa-spin fa-3x');
           var uniqueCSS = uniqueId + '-string-css';
           $('#' +  uniqueCSS).remove();
           $('head').append('<style id="' + uniqueCSS + '">' + data.msg + '</style>');
@@ -612,7 +642,7 @@
       '</div>',
       '</div>',
       '<div class="row">',
-      '<span class="btn btn-primary" action-click="submit">Submit</span>',
+      '<span class="btn btn-primary" action-click="submit">Apply</span>',
       '<span class="btn btn-info btn-outline" action-click="cancel">Cancel</span>',
       '<span class="btn btn-danger delete-group" action-click="delete">Delete</span>',
       '</div>'
@@ -637,9 +667,9 @@
     },
     editors: {
       data: {
-        label: 'Data',
-        type: 'textarea',
-        placeholder: 'Data',
+        label: 'Data Key',
+        type: 'text',
+        placeholder: 'Data Key',
         validate: function(val) {
           try {
             if(val) JSON.parse(val);
@@ -693,7 +723,7 @@
           app.coop('update-data', options);
         } else {
           //TODO: Why this is undefined?
-          console.log('tabs, ', this.getViewIn('tabs').$el.getViewIn('tab-html'));
+          //console.log('tabs, ', this.getViewIn('tabs').$el.getViewIn('tab-html'));
           //this.getViewIn('tabs').getViewIn('tab-html').getEditor('code').validate(true);
           this.getEditor('data').validate(true);
           this.close();
@@ -757,7 +787,6 @@
       if (this.get('type') === 'add') {
         this.$el.find('.delete-group').addClass('hide');
       }
-      this.$el.find('textarea').css('height', '200px');
     }
   });
 })(Application);
