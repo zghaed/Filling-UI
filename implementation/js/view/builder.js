@@ -33,8 +33,8 @@
             less: '',
             css_container: {
               position: 'absolute',
-              top: e.pageY - this.$el.offset().top,
-              left: e.pageX - this.$el.offset().left,
+              top: parseInt((e.pageY - this.$el.offset().top) / this.$el.height() * 100) + '%',
+              left: parseInt((e.pageX - this.$el.offset().left) / this.$el.width() * 100) + '%',
               width: '6em',
               height: '3em',
               'background-color': 'lightgrey',
@@ -95,6 +95,7 @@
       }
     },
     onReady: function() {
+      console.log('here');
       var self = this,
         allGroups = app.store.get(this.get('name')),
         viewAndRegion = this.get('name'),
@@ -567,6 +568,7 @@
     onReady: function() {
       var theTemplateScript = this.get('template'),
         inputData = this.get('data'),
+        //TODO: get the data here
       //  jsonData = (inputData === '') ? '' : JSON.parse(inputData),
         preCompiledTemplateScript;
       if (Array.isArray(inputData)) {
@@ -735,31 +737,66 @@
         //TODO: change the height of surronding elements
         var obj = this.get('obj'),
           viewAndRegion = obj.name,
-          region = viewAndRegion.split('-').pop(),
           groupNumber = obj.groupNumber,
-          template = obj.template,
-          data = obj.data,
-          css_container = obj.css_container,
-          less = obj.less,
+          stringNumber = obj.stringNumber,
           cacheData = app.store.get(viewAndRegion),
-          deleteRegionGroups = cacheData.groups;
+          deleteGroups = cacheData.groups,
+          deleteStrings = cacheData.strings;
+        if (this.get('type')==='group') {
+          var groupId = viewAndRegion + '-' + groupNumber + '-id',
+            basis = $('#' + groupId).css('flex-basis');
+          if (parseInt(groupNumber) === 0) {
+            var next = viewAndRegion + '-' + (parseInt(groupNumber)+1) + '-id',
+              nextBasis = parseInt($('#' + next).css('flex-basis')) + parseInt(basis);
+            console.log('next basis is, ', nextBasis);
+            deleteGroups[(parseInt(groupNumber)+1)].css_container = {
+              'flex-grow': '0',
+              'flex-shrink': '1',
+              'flex-basis': nextBasis + '%',
+            };
+          } else {
+            var prev = viewAndRegion + '-' + (parseInt(groupNumber)-1) + '-id',
+              prevBasis = parseInt($('#' + prev).css('flex-basis')) + parseInt(basis);
+            console.log('prev basis is, ', prevBasis);
+            deleteGroups[(parseInt(groupNumber)-1)].css_container = {
+              'flex-grow': '0',
+              'flex-shrink': '1',
+              'flex-basis': prevBasis + '%',
+            };
+          }
+          deleteGroups.splice(groupNumber, 1);
+          cacheData.groups = deleteGroups;
+          var options = {
+            newGroups: cacheData.groups,
+            newStrings: cacheData.strings,
+            direction: cacheData.direction,
+            name: viewAndRegion
+          };
+          if (cacheData.groups.length > 1) {
 
-        deleteRegionGroups.splice(groupNumber, 1);
-        cacheData.groups = deleteRegionGroups;
-        var options = {
-          newGroups: cacheData.groups,
-          direction: cacheData.direction,
-          name: name
-        };
-        if (cacheData.groups.length > 0) {
-          app.store.set(viewAndRegion, cacheData);
+            app.store.set(viewAndRegion, cacheData);
+            var cssId = viewAndRegion + '-' + groupNumber + '-css';
+            $('#' + cssId).remove();
+            this.close();
+            app.coop('update-data', options);
+          } else {
+            this.close();
+          }
         } else {
-          app.store.set(viewAndRegion);
+          deleteStrings.splice(stringNumber, 1);
+          cacheData.strings = deleteStrings;
+          var stringOptions = {
+            newGroups: cacheData.groups,
+            newStrings: cacheData.strings,
+            direction: cacheData.direction,
+            name: viewAndRegion
+          };
+          app.store.set(viewAndRegion, cacheData);
+          var stringCssId = viewAndRegion + '-' + groupNumber + '-string-css';
+          $('#' + stringCssId).remove();
+          this.close();
+          app.coop('update-data', stringOptions);
         }
-        var cssId = viewAndRegion + '-' + groupNumber + '-css';
-        $('#' + cssId).remove();
-        app.coop('update-data', options);
-        this.close();
       }
     },
     onReady: function() {
