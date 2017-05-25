@@ -2,11 +2,10 @@
   app.view('Builder', {
     template: [
       '<div region="string"></div>',
-      '<div action="add-string" region="group"></div>',
+      '<div action="update-group" region="group"></div>',
     ],
     coop: ['update-data'],
     onUpdateData: function(options) {
-      console.log('here options is,', options);
       var ViewAndRegion = options.name,
         nameArray = ViewAndRegion.split('-');
       nameArray.shift();
@@ -22,9 +21,10 @@
       }
     },
     actions: {
-      'add-string': function($btn, e) {
+      'update-group': function($btn, e) {
         var allGroups = app.store.get(this.get('name')),
           viewAndRegion = this.get('name');
+        console.log('e is, ', e);
         if (e.shiftKey) {
           var stringNumber = allGroups.strings.length;
           var stringId = viewAndRegion + '-' + stringNumber + '-string-id';
@@ -38,7 +38,8 @@
               left: e.pageX - this.$el.offset().left,
               width: '6em',
               height: '3em',
-              'background-color': 'lightgrey'
+              'background-color': 'lightgrey',
+              'border-bottom': '2px dotted black'
             }
           };
           string.name = this.get('name');
@@ -146,7 +147,6 @@
     ],
     actions: {
       'edit-string': function($btn, e) {
-        console.log('data is, ', this.get());
         (new PopOver({
           data: {
             type: 'string',
@@ -189,6 +189,9 @@
       }
       if (this.get('css_container')) {
         $('#' + uniqueId + '-string-id').css(this.get('css_container'));
+        if (typeof this.get('stringNumber') !== 'undefined' && this.get('template')) {
+          this.$el.parent().css({'height': '', 'width': '', 'background-color': ''});
+        }
       }
     }
   });
@@ -525,7 +528,7 @@
 
   var Content = app.view({
     template: [
-      '<div region="view-lock" action="add-string">{{{element}}}</div>',
+      '<div region="view-lock" action="update-group">{{{element}}}</div>',
     ],
     actions: {
       _bubble: true,
@@ -703,7 +706,7 @@
     },
     onReady: function() {
       this.$el.find('[tabid="html"]').addClass('active');
-      var tabids = ['less', 'html'],
+      var tabids = ['html', 'less'],
         self = this;
       _.map(tabids, function(tabid) {
         self.tab('tabs', app.view({
