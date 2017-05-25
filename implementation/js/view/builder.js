@@ -1,8 +1,8 @@
 ;(function(app) {
   app.view('Builder', {
     template: [
-      '<div action="add-string" region="string"></div>',
-      '<div region="group"></div>',
+      '<div region="string"></div>',
+      '<div action="add-string" region="group"></div>',
     ],
     coop: ['update-data'],
     onUpdateData: function(options) {
@@ -15,26 +15,39 @@
         this.set({
           name:      options.name,
           direction: options.direction,
-          groups:     options.newGroups
+          groups:    options.newGroups
         });
       }
     },
     actions: {
       'add-string': function($btn, e) {
         if (e.shiftKey) {
-          console.log('shift click', $btn, e);
-          var stringRegion = this.$el.parent().find('[region="string"]');
-          var newElement = $('<div class="border">TEST</div>');
-          newElement.css({
-            position: 'absolute',
-            top: e.offsetY,
-            left: e.offsetX,
-            width: '6em',
-            height: '3em',
-          });
-          this.$el.parent().parent().parent().find('[region="string"]').append(newElement);
+          var allGroups = app.store.get(this.get('name')),
+            viewAndRegion = this.get('name'),
+            stringNumber = allGroups.strings.length;
+          var stringId = viewAndRegion + '-' + stringNumber + '-string-id';
+          var string = {
+            template: '',
+            data: '',
+            less: '',
+            css_container: {
+              position: 'absolute',
+              top: e.pageY - this.$el.offset().top,
+              left: e.pageX - this.$el.offset().left,
+              width: '6em',
+              height: '3em',
+              'background-color': 'lightgrey'
+            }
+          };
+          string.name = this.get('name');
+          string.stringNumber = stringNumber;
+          var stringsDiv = this.getRegion('string').$el;
+          stringsDiv.append('<div id="' + stringId + '"></div>');
+          var newString =  new StringView({ data: string });
+          this.spray($('#' + stringId), newString);
+          allGroups.strings.push(string);
+          app.store.set(viewAndRegion, allGroups);
         } else {
-          console.log('adding groups', this.get());
         }
       },
       'change-direction': function() {
@@ -69,8 +82,9 @@
       var self = this,
         allGroups = app.store.get(this.get('name')),
         viewAndRegion = this.get('name'),
-        currentDirection = allGroups.direction;
-        groupNumber = 0;
+        currentDirection = allGroups.direction,
+        groupNumber = 0,
+        stringNumber = 0;
       _.each(allGroups.groups, function(group) {
         var id = viewAndRegion + '-' + groupNumber + '-id';
         group.name = self.get('name');
@@ -94,9 +108,57 @@
         }
         groupNumber = groupNumber + 1;
       });
+      _.each(allGroups.strings, function(string) {
+        var stringId = viewAndRegion + '-' + stringNumber + '-string-id';
+        string.name = self.get('name');
+        string.stringNumber = stringNumber;
+        var stringsDiv = self.getRegion('string').$el;
+        stringsDiv.append('<div id="' + stringId + '"></div>');
+        var newString =  new StringView({ data: string });
+        self.spray($('#' + stringId), newString);
+        stringNumber = stringNumber + 1;
+      });
     },
     onClose: function() {
       $('[id^='+this.get('name')+']').remove();
+    }
+  });
+
+  var StringView = app.view('StringView', {
+    template: [
+      '<div region="container">{{{template}}}</div>',
+    ],
+    onReady: function() {
+      var viewAndRegion = this.get('name'),
+        uniqueId = viewAndRegion + '-' + this.get('stringNumber') ;
+      if (this.get('less')) {
+        var theme = $('head link[rel="stylesheet"]').attr('href').split('/')[1],
+          less = '#' + uniqueId + '-string-id {' + this.get('less')+ '}',
+          self = this;
+        if (self.flag === undefined) {
+          self.flag = true;
+        }
+        self.lock('view-lock', self.flag, 'fa fa-spinner fa-spin fa-3x');
+        self.flag = !self.flag;
+        app.remote({
+          url: 'api/test',
+          payload: {
+            less: less,
+            theme: theme
+          }
+        }).done(function(data) {
+          self.lock('view-lock', self.flag, 'fa fa-spinner fa-spin fa-3x');
+          var uniqueCSS = uniqueId + '-css';
+          $('#' +  uniqueCSS).remove();
+          $('head').append('<style id="' + uniqueCSS + '">' + data.msg + '</style>');
+        });
+      } else {
+        var uniqueCSS = uniqueId + '-css';
+        $('#' +  uniqueCSS).remove();
+      }
+      if (this.get('css_container')) {
+        $('#' + uniqueId + '-string-id').css(this.get('css_container'));
+      }
     }
   });
 
@@ -315,13 +377,21 @@
         template: '<span class="glyphicon glyphicon-pencil"></span>',
         data: '',
         less: '',
-        css_container: {flex: '0 1 ' + $('#new').css('flex-basis'),}
+        css_container: {
+          'flex-grow': '0',
+          'flex-shrink': '1',
+          'flex-basis': $('#new').css('flex-basis'),
+        }
       };
       var editedData = {
         template: addGroup[parseInt(groupNumber)].template,
         data: addGroup[parseInt(groupNumber)].data,
         less: addGroup[parseInt(groupNumber)].less,
-        css_container: {flex: '0 1 ' + this.$el.parent().css('flex-basis'),}
+        css_container: {
+          'flex-grow': '0',
+          'flex-shrink': '1',
+          'flex-basis': this.$el.parent().css('flex-basis'),
+        }
       };
       if (event.hasClass('drag-bottom')) {
         if (parseInt(groupNumber) === last) {
@@ -360,11 +430,27 @@
         }
       }
       if (position === 'prev') {
-        addGroup[parseInt(groupNumber)].css_container = {flex: '0 1 ' + this.$el.parent().css('flex-basis'),};
-        addGroup[parseInt(groupNumber) - 1].css_container = {flex: '0 1 ' + this.prevBasis + '%',};
+        addGroup[parseInt(groupNumber)].css_container = {
+          'flex-grow': '0',
+          'flex-shrink': '1',
+          'flex-basis': this.$el.parent().css('flex-basis'),
+        };
+        addGroup[parseInt(groupNumber) - 1].css_container = {
+          'flex-grow': '0',
+          'flex-shrink': '1',
+          'flex-basis': this.prevBasis + '%',
+        };
       } else if (position === 'next') {
-        addGroup[parseInt(groupNumber)].css_container = {flex: '0 1 ' + this.$el.parent().css('flex-basis'),};
-        addGroup[parseInt(groupNumber) + 1].css_container = {flex: '0 1 ' + this.nextBasis + '%',};
+        addGroup[parseInt(groupNumber)].css_container = {
+          'flex-grow': '0',
+          'flex-shrink': '1',
+          'flex-basis': this.$el.parent().css('flex-basis'),
+        };
+        addGroup[parseInt(groupNumber) + 1].css_container = {
+          'flex-grow': '0',
+          'flex-shrink': '1',
+          'flex-basis': this.nextBasis + '%',
+        };
       }
       allGroups.groups = addGroup;
       var options = {
@@ -408,10 +494,12 @@
 
   var Content = app.view({
     template: [
-      '<div region="view-lock" action="edit-element">{{{element}}}</div>',
+      '<div region="view-lock" action="edit-group">{{{element}}}</div>',
     ],
     actions: {
-      'edit-element': function($btn, e) {
+      'edit-group': function($btn, e) {
+        e.preventDefault();
+        e.stopPropagation();
         var obj = this.get('obj');
         (new PopOver({
           data: {

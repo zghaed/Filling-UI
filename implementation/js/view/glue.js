@@ -22,8 +22,16 @@
              }
           });
           app.store.set(cacheName, app.store.get(cacheName) || {
-            'groups':
-            [{'template': '<span class="glyphicon glyphicon-pencil"></span>', 'data':'', 'less':'', 'css_container':{flex: "0 1 100%",}},],
+            'groups': [
+              {'template': '<span class="glyphicon glyphicon-pencil"></span>',
+                'data':'', 'less':'', 'css_container': {
+                'flex-grow': '0',
+                'flex-shrink': '1',
+                'flex-basis': '100%',
+                }
+              },
+            ],
+            'strings': [],
             'direction': ''
           });
           this.spray(target, builder);
@@ -54,8 +62,16 @@
              }
           });
           app.store.set(key, app.store.get(key) || {
-            'groups':
-              [{'template': '<span class="glyphicon glyphicon-pencil"></span>', 'data':'', 'less':'', 'css_container':{flex: "0 1 100%",}},],
+            'groups': [
+              {'template': '<span class="glyphicon glyphicon-pencil"></span>',
+                'data':'', 'less':'', 'css_container': {
+                'flex-grow': '0',
+                'flex-shrink': '1',
+                'flex-basis': '100%',
+                }
+              },
+            ],
+            'strings': [],
             'direction': ''
           });
           var nameArray = key.split('-');
