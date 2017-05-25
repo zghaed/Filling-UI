@@ -24,7 +24,6 @@
       'update-group': function($btn, e) {
         var allGroups = app.store.get(this.get('name')),
           viewAndRegion = this.get('name');
-        console.log('e is, ', e);
         if (e.shiftKey) {
           var stringNumber = allGroups.strings.length;
           var stringId = viewAndRegion + '-' + stringNumber + '-string-id';
@@ -138,6 +137,36 @@
     },
     onClose: function() {
       $('[id^='+this.get('name')+']').remove();
+    },
+    extractTemplate: function() {
+      var builderName = this.get('name'),
+        groups = app.store.get(builderName),
+        stacks = groups.groups,
+        strings = groups.strings;
+      console.log('hello api', this.get());
+      return 'bye';
+    },
+    extractLess: function() {
+      var builderName = this.get('name'),
+        groups = app.store.get(builderName),
+        stacks = groups.groups,
+        strings = groups.strings,
+        stringNumber = 0,
+        groupNumber = 0,
+        allLess = '';
+      _.each(stacks, function(stack) {
+        var cssId = builderName + '-' + groupNumber + '-css',
+          currentLess = '#' + cssId + '{' + stack.less + '}';
+        allLess += currentLess;
+        groupNumber += 1;
+      });
+      _.each(strings, function(string) {
+        var cssId = builderName + '-' + stringNumber + '-string-css',
+          currentLess = '#' + cssId + '{' + string.less + '}';
+        allLess += currentLess;
+        stringNumber += 1;
+      });
+      return allLess;
     }
   });
 
@@ -179,7 +208,7 @@
           }
         }).done(function(data) {
           self.lock('view-lock', self.flag, 'fa fa-spinner fa-spin fa-3x');
-          var uniqueCSS = uniqueId + '-css';
+          var uniqueCSS = uniqueId + '-string-css';
           $('#' +  uniqueCSS).remove();
           $('head').append('<style id="' + uniqueCSS + '">' + data.msg + '</style>');
         });
