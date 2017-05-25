@@ -145,32 +145,40 @@
         strings = groups.strings,
         stringNumber = 0,
         stackNumber = 0,
-        allTemplate = $('<div></div>');
-    allTemplate.append('<div region="string"></div>');
-    allTemplate.append('<div region="group"></div>');
-    _.each(stacks, function(stack) {
-      if (stack.template) {
-        var stackId = builderName + '-' + stackNumber + '-id',
-          stackDiv = '<div id ="' + stackId + '">' + stack.template + '</div>';
-        if (stack.data) {
-          stackDiv = '{{#' + stack.data + '}}' + stackDiv + '{{/' + stack.data + '}}';
-        }
-        allTemplate.find('[region="group"]').append(stackDiv);
+        allTemplate = $('<div></div>'),
+        direction = '';
+      if (groups.direction == 'h') {
+        direction = 'flex-direction: row;';
+      } else if (groups.direction == 'v') {
+        direction = 'flex-direction: column;';
       }
-      stackNumber += 1;
-    });
-    _.each(strings, function(string) {
-      if (string.template) {
-        var stringId = builderName + '-' + stringNumber + '-string-id',
-          stringDiv = '<div id ="' + stringId + '">' + string.template + '</div>';
-        if (string.data) {
-          stringDiv = '{{#' + string.data + '}}' + stringDiv + '{{/' + string.data + '}}';
+      allTemplate.append('<div region="string"></div>');
+      allTemplate.append('<div region="group" style="' + direction + '"></div>');
+      _.each(stacks, function(stack) {
+        if (stack.template) {
+          var stackId = builderName + '-' + stackNumber + '-id',
+            style = $('#' + stackId).attr('style'),
+            stackDiv = '<div id ="' + stackId + '" style="' + style + '">' + stack.template + '</div>';
+          if (stack.data) {
+            stackDiv = '{{#' + stack.data + '}}' + $(stackDiv).get(0).outerHTML + '{{/' + stack.data + '}}';
+          }
+          allTemplate.find('[region="group"]').append(stackDiv);
         }
-        allTemplate.find('[region="string"]').append(stringDiv);
-      }
-      stringNumber += 1;
-    });
-    return allTemplate.html();
+        stackNumber += 1;
+      });
+      _.each(strings, function(string) {
+        if (string.template) {
+          var stringId = builderName + '-' + stringNumber + '-string-id',
+            style = $('#' + stringId).attr('style'),
+            stringDiv = '<div id ="' + stringId + '" style="' + style + '">' + string.template + '</div>';
+          if (string.data) {
+            stringDiv = '{{#' + string.data + '}}' + $(stringDiv).get(0).outerHTML + '{{/' + string.data + '}}';
+          }
+          allTemplate.find('[region="string"]').append(stringDiv);
+        }
+        stringNumber += 1;
+      });
+      return allTemplate.html();
     },
     extractLess: function() {
       var builderName = this.get('name'),
@@ -559,15 +567,15 @@
     onReady: function() {
       var theTemplateScript = this.get('template'),
         inputData = this.get('data'),
-        jsonData = (inputData === '') ? '' : JSON.parse(inputData),
+      //  jsonData = (inputData === '') ? '' : JSON.parse(inputData),
         preCompiledTemplateScript;
-      if (Array.isArray(jsonData)) {
+      if (Array.isArray(inputData)) {
         preCompiledTemplateScript = '{{#each .}}' + theTemplateScript + '{{/each}}';
       } else {
         preCompiledTemplateScript = theTemplateScript;
       }
       var theTemplate = Handlebars.compile(preCompiledTemplateScript),
-        theCompiledHTML = theTemplate(jsonData),
+        theCompiledHTML = theTemplate(inputData),
         contentData = {
           element: theCompiledHTML,
           obj: this.get()
@@ -669,21 +677,12 @@
       data: {
         label: 'Data Key',
         type: 'text',
-        placeholder: 'Data Key',
-        validate: function(val) {
-          try {
-            if(val) JSON.parse(val);
-          } catch (e) {
-            return 'Data needs to be in JSON format';
-          }
-          return true;
-        }
+        placeholder: 'Data Key'
       }
     },
     actions: {
       submit: function() {
-        if (this.getViewIn('tabs').$el.find('[region="tab-html"] [editor="code"] textarea').val() &&
-          (this.getEditor('data').validate()===true)) {
+        if (this.getViewIn('tabs').$el.find('[region="tab-html"] [editor="code"] textarea').val()) {
           //HTML field is not empty
           var obj = this.get('obj'),
             viewAndRegion = obj.name,
@@ -722,10 +721,10 @@
           this.close();
           app.coop('update-data', options);
         } else {
+          console.log('heeerE?');
           //TODO: Why this is undefined?
           //console.log('tabs, ', this.getViewIn('tabs').$el.getViewIn('tab-html'));
           //this.getViewIn('tabs').getViewIn('tab-html').getEditor('code').validate(true);
-          this.getEditor('data').validate(true);
           this.close();
         }
       },
