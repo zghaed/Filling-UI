@@ -83,17 +83,21 @@
         var newGroup =  new Group({ data: group });
         self.spray($('#' + id), newGroup);
         if (currentDirection === 'v') {
-          newGroup.$el.find('.drag-left').addClass('hide');
-          newGroup.$el.find('.drag-right').addClass('hide');
-          groupsDiv.css({
-            'flex-direction': 'column',
-          });
+          if (allGroups.groups.length > 1) {
+            newGroup.$el.find('.drag-left').addClass('hide');
+            newGroup.$el.find('.drag-right').addClass('hide');
+            groupsDiv.css({
+              'flex-direction': 'column',
+            });
+          }
         } else if (currentDirection === 'h') {
-          newGroup.$el.find('.drag-top').addClass('hide');
-          newGroup.$el.find('.drag-bottom').addClass('hide');
-          groupsDiv.css({
-            'flex-direction': 'row',
-          });
+          if (allGroups.groups.length > 1) {
+            newGroup.$el.find('.drag-top').addClass('hide');
+            newGroup.$el.find('.drag-bottom').addClass('hide');
+            groupsDiv.css({
+              'flex-direction': 'row',
+            });
+          }
         }
         groupNumber = groupNumber + 1;
       });
@@ -187,6 +191,11 @@
       '<div action-click="edit-string" region="string-container">{{{template}}}</div>',
       '<div class="ui-draggable-item drag-string-right"></div>',
     ],
+    dnd: {
+      drag: {
+        helper: 'original'
+      }
+    },
     actions: {
       'edit-string': function($btn, e) {
         (new PopOver({
@@ -200,6 +209,34 @@
           }
         })).popover($btn, {placement: 'top', bond: this, style: {width: '600px'}});
       }
+    },
+    flagX: false,
+    flagY: false,
+    onDragStart: function(event, ui) {
+      this.initialX = parseInt(this.$el.parent().css('left'));
+      this.initialY = parseInt(this.$el.parent().css('top'));
+    },
+    onDrag: function(event, ui) {
+      this.changeX = arguments[1].position.left - arguments[1].originalPosition.left;
+      this.changeY = arguments[1].position.top - arguments[1].originalPosition.top;
+      this.$el.parent().css('top', this.initialY + this.changeY + 'px');
+      this.$el.parent().css('left', this.initialX + this.changeX + 'px');
+    },
+    onDragStop: function(event, ui) {
+      var viewAndRegion = this.get('name'),
+        allGroups = app.store.get(viewAndRegion);
+      allGroups.strings[this.get('stringNumber')].css_container.top = this.$el.parent().css('top');
+      allGroups.strings[this.get('stringNumber')].css_container.left = this.$el.parent().css('left');
+      app.store.set(viewAndRegion, allGroups);
+      var options = {
+        newGroups: allGroups.groups,
+        newStrings: allGroups.strings,
+        direction: allGroups.direction,
+        name: this.get('name')
+      };
+      var cssId = viewAndRegion + '-' + this.get('stringNumber') + '-string-css';
+      $('#' + cssId).remove();
+      app.coop('update-data', options);
     },
     onReady: function() {
       var viewAndRegion = this.get('name'),
@@ -234,7 +271,9 @@
         if (typeof this.get('stringNumber') !== 'undefined' && this.get('template')) {
           this.$el.parent().css({'height': '', 'width': '', 'background-color': ''});
           var allGroups = app.store.get(viewAndRegion);
-          allGroups.strings[this.get('stringNumber')].css_container = this.$el.parent().attr('style');
+          delete allGroups.strings[this.get('stringNumber')].css_container['height'];
+          delete allGroups.strings[this.get('stringNumber')].css_container['width'];
+          delete allGroups.strings[this.get('stringNumber')].css_container['background-color'];
           app.store.set(viewAndRegion, allGroups);
         }
       }
@@ -256,114 +295,6 @@
     },
     heightFlag: true,
     widthFlag: true,
-    onDrag: function(event, ui) {
-      var id = this.$el.parent().attr('id');
-      var arrayId = id.split('-');
-      arrayId.pop();
-      var viewAndRegion = this.get('name'),
-        allGroups = app.store.get(viewAndRegion),
-        addGroup = allGroups.groups,
-        last = addGroup.length - 1;
-        groupNumber = arrayId.pop();
-      if (event.hasClass('drag-bottom')) {
-        if (this.heightFlag) {
-          this.initialHeight = this.$el.height();
-          this.initialBasis = parseInt(this.$el.parent().css('flex-basis'));
-        }
-        var newBottomHeight = parseInt(this.change/this.initialHeight*this.initialBasis);
-        this.change = arguments[1].originalPosition.top  - arguments[1].position.top;
-        var bottomHeight = this.initialBasis - newBottomHeight;
-        this.$el.parent().css('flex', '0 1 '+ bottomHeight +'%');
-        if (parseInt(groupNumber) === last) {
-          if (this.heightFlag) {
-            this.heightFlag = false;
-          }
-          $('#new').css('flex', '0 1 '+ newBottomHeight +'%');
-        } else {
-          var currentIdBottom = this.$el.parent().attr('id');
-          var nextBottom = $('#' + currentIdBottom).next();
-          if (this.heightFlag) {
-            this.nextBasis = parseInt(nextBottom.css('flex-basis'));
-            this.heightFlag = false;
-          }
-          var newNextHeightBottom = newBottomHeight + this.nextBasis;
-          nextBottom.css('flex', '0 1 ' + newNextHeightBottom +'%');
-        }
-      } else if (event.hasClass('drag-top')) {
-        if (this.heightFlag) {
-          this.initialHeight = this.$el.height();
-          this.initialBasis = parseInt(this.$el.parent().css('flex-basis'));
-        }
-        this.change = arguments[1].position.top - arguments[1].originalPosition.top;
-        var newTopHeight = parseInt(this.change/this.initialHeight*this.initialBasis);
-        var newHeight = this.initialBasis - newTopHeight;
-        this.$el.parent().css('flex', '0 1 ' + newHeight +'%');
-        if (parseInt(groupNumber) === 0) {
-          if (this.heightFlag) {
-            this.heightFlag = false;
-          }
-          $('#new').css('flex', '0 1 ' + newTopHeight +'%');
-          this.$el.parent().css('flex', '0 1 ' + newHeight +'%');
-        } else {
-          var currentId = this.$el.parent().attr('id');
-          var prev = $('#' + currentId).prev();
-          if (this.heightFlag) {
-            this.prevBasis = parseInt(prev.css('flex-basis'));
-            this.heightFlag = false;
-          }
-          var prevHeight = newTopHeight + this.prevBasis;
-          prev.css('flex', '0 1 ' + prevHeight + '%');
-        }
-      } else if (event.hasClass('drag-left')) {
-        if (this.widthFlag) {
-          this.initialWidth = this.$el.width();
-          this.initialBasis = parseInt(this.$el.parent().css('flex-basis'));
-        }
-        this.change = arguments[1].position.left - arguments[1].originalPosition.left;
-        var newLeftWidth = parseInt(this.change/this.initialWidth*this.initialBasis);
-        var newWidth = this.initialBasis - newLeftWidth;
-        this.$el.parent().css('flex', '0 1 ' + newWidth + '%');
-        if (parseInt(groupNumber) === 0) {
-          if (this.widthFlag) {
-           this.widthFlag = false;
-          }
-          $('#new').css('flex', '0 1 ' + newLeftWidth + '%');
-        } else {
-          var currentLeftId = this.$el.parent().attr('id');
-          var prevLeft = $('#' + currentLeftId).prev();
-          if (this.widthFlag) {
-           this.prevBasis = parseInt(prevLeft.css('flex-basis'));
-           this.widthFlag = false;
-          }
-          var prevWidth = newLeftWidth + this.prevBasis;
-          prevLeft.css('flex', '0 1 ' + prevWidth + '%');
-        }
-      } else if (event.hasClass('drag-right')) {
-        if (this.widthFlag) {
-          this.initialWidth = this.$el.width();
-          this.initialBasis = parseInt(this.$el.parent().css('flex-basis'));
-        }
-        var newRightWidth = parseInt(this.change/this.initialWidth*this.initialBasis);
-        this.change = arguments[1].originalPosition.left  - arguments[1].position.left;
-        var rightWidth = this.initialBasis - newRightWidth;
-        this.$el.parent().css('flex', '0 1 ' + rightWidth + '%');
-        if (parseInt(groupNumber) === last) {
-          if (this.widthFlag) {
-            this.widthFlag = false;
-          }
-           $('#new').css('flex', '0 1 ' + newRightWidth + '%');
-        } else {
-          var currentIdRight = this.$el.parent().attr('id');
-          var nextRight = $('#' + currentIdRight).next();
-          if (this.widthFlag) {
-            this.nextBasis = parseInt(nextRight.css('flex-basis'));
-            this.widthFlag = false;
-          }
-          var newNextWidthRight = newRightWidth + this.nextBasis;
-          nextRight.css('flex', '0 1 ' + newNextWidthRight + '%');
-        }
-      }
-    },
     onDragStart: function(event, ui) {
       var id = this.$el.parent().attr('id'),
         arrayId = id.split('-');
@@ -425,6 +356,114 @@
           this.$el.find('.drag-top').hide();
           this.$el.find('.drag-bottom').hide();
           $('<div id="new"></div>').insertAfter('#' + id);
+        }
+      }
+    },
+    onDrag: function(event, ui) {
+      var id = this.$el.parent().attr('id');
+      var arrayId = id.split('-');
+      arrayId.pop();
+      var viewAndRegion = this.get('name'),
+        allGroups = app.store.get(viewAndRegion),
+        addGroup = allGroups.groups,
+        last = addGroup.length - 1;
+        groupNumber = arrayId.pop();
+      if (event.hasClass('drag-bottom')) {
+        if (this.heightFlag) {
+          this.initialHeight = this.$el.height();
+          this.initialBasis = parseInt(this.$el.parent().css('flex-basis'));
+        }
+        this.change = arguments[1].originalPosition.top  - arguments[1].position.top;
+        var newBottomHeight = parseInt(this.change / this.initialHeight * this.initialBasis);
+        var bottomHeight = this.initialBasis - newBottomHeight;
+        this.$el.parent().css('flex', '0 1 '+ bottomHeight +'%');
+        if (parseInt(groupNumber) === last) {
+          if (this.heightFlag) {
+            this.heightFlag = false;
+          }
+          $('#new').css('flex', '0 1 '+ newBottomHeight +'%');
+        } else {
+          var currentIdBottom = this.$el.parent().attr('id');
+          var nextBottom = $('#' + currentIdBottom).next();
+          if (this.heightFlag) {
+            this.nextBasis = parseInt(nextBottom.css('flex-basis'));
+            this.heightFlag = false;
+          }
+          var newNextHeightBottom = newBottomHeight + this.nextBasis;
+          nextBottom.css('flex', '0 1 ' + newNextHeightBottom +'%');
+        }
+      } else if (event.hasClass('drag-top')) {
+        if (this.heightFlag) {
+          this.initialHeight = this.$el.height();
+          this.initialBasis = parseInt(this.$el.parent().css('flex-basis'));
+        }
+        this.change = arguments[1].position.top - arguments[1].originalPosition.top;
+        var newTopHeight = parseInt(this.change / this.initialHeight * this.initialBasis);
+        var newHeight = this.initialBasis - newTopHeight;
+        this.$el.parent().css('flex', '0 1 ' + newHeight +'%');
+        if (parseInt(groupNumber) === 0) {
+          if (this.heightFlag) {
+            this.heightFlag = false;
+          }
+          $('#new').css('flex', '0 1 ' + newTopHeight +'%');
+          this.$el.parent().css('flex', '0 1 ' + newHeight +'%');
+        } else {
+          var currentId = this.$el.parent().attr('id');
+          var prev = $('#' + currentId).prev();
+          if (this.heightFlag) {
+            this.prevBasis = parseInt(prev.css('flex-basis'));
+            this.heightFlag = false;
+          }
+          var prevHeight = newTopHeight + this.prevBasis;
+          prev.css('flex', '0 1 ' + prevHeight + '%');
+        }
+      } else if (event.hasClass('drag-left')) {
+        if (this.widthFlag) {
+          this.initialWidth = this.$el.width();
+          this.initialBasis = parseInt(this.$el.parent().css('flex-basis'));
+        }
+        this.change = arguments[1].position.left - arguments[1].originalPosition.left;
+        var newLeftWidth = parseInt(this.change / this.initialWidth * this.initialBasis);
+        var newWidth = this.initialBasis - newLeftWidth;
+        this.$el.parent().css('flex', '0 1 ' + newWidth + '%');
+        if (parseInt(groupNumber) === 0) {
+          if (this.widthFlag) {
+           this.widthFlag = false;
+          }
+          $('#new').css('flex', '0 1 ' + newLeftWidth + '%');
+        } else {
+          var currentLeftId = this.$el.parent().attr('id');
+          var prevLeft = $('#' + currentLeftId).prev();
+          if (this.widthFlag) {
+           this.prevBasis = parseInt(prevLeft.css('flex-basis'));
+           this.widthFlag = false;
+          }
+          var prevWidth = newLeftWidth + this.prevBasis;
+          prevLeft.css('flex', '0 1 ' + prevWidth + '%');
+        }
+      } else if (event.hasClass('drag-right')) {
+        if (this.widthFlag) {
+          this.initialWidth = this.$el.width();
+          this.initialBasis = parseInt(this.$el.parent().css('flex-basis'));
+        }
+        var newRightWidth = parseInt(this.change / this.initialWidth * this.initialBasis);
+        this.change = arguments[1].originalPosition.left  - arguments[1].position.left;
+        var rightWidth = this.initialBasis - newRightWidth;
+        this.$el.parent().css('flex', '0 1 ' + rightWidth + '%');
+        if (parseInt(groupNumber) === last) {
+          if (this.widthFlag) {
+            this.widthFlag = false;
+          }
+           $('#new').css('flex', '0 1 ' + newRightWidth + '%');
+        } else {
+          var currentIdRight = this.$el.parent().attr('id');
+          var nextRight = $('#' + currentIdRight).next();
+          if (this.widthFlag) {
+            this.nextBasis = parseInt(nextRight.css('flex-basis'));
+            this.widthFlag = false;
+          }
+          var newNextWidthRight = newRightWidth + this.nextBasis;
+          nextRight.css('flex', '0 1 ' + newNextWidthRight + '%');
         }
       }
     },
@@ -534,6 +573,7 @@
       allGroups.groups = addGroup;
       var options = {
         newGroups: allGroups.groups,
+        newStrings: allGroups.strings,
         direction: allGroups.direction,
         name: this.get('name')
       };
