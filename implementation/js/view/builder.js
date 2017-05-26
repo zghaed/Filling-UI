@@ -6,12 +6,11 @@
     ],
     coop: ['update-data'],
     onUpdateData: function(options) {
-      var ViewAndRegion = options.name,
-        nameArray = ViewAndRegion.split('-');
+      var cacheName = this.options.cacheName,
+        nameArray = cacheName.split('-');
       nameArray.shift();
       var region = nameArray.join('-');
       if(region === this.$el.parent().attr('region')) {
-        //TODO: empty array remove existing view
         this.set({
           name:      options.name,
           direction: options.direction,
@@ -22,38 +21,38 @@
     },
     actions: {
       'update-group': function($btn, e) {
-        var allGroups = app.store.get(cacheName),
-          viewAndRegion = cacheName;
+        var cacheName = this.options.cacheName,
+          allGroups = app.store.get(cacheName);
         if (e.shiftKey) {
-          console.log('height size is, ', this.$el.find('[region="string-container"]').height());
-          var stringNumber = allGroups.strings.length;
-          var stringId = viewAndRegion + '-' + stringNumber + '-string-id';
+          var stringNumber = allGroups.strings.length,
+            stringId = cacheName + '-' + stringNumber + '-string-id';
           var string = {
             template: '',
             data: '',
             less: '',
             css_container: {
               position: 'absolute',
-              top: parseInt((e.pageY - this.$el.offset().top - 35) / this.$el.height() * 100) + '%',
+              //-40 ~ 3em for the height
+              top: e.pageY - this.$el.offset().top - 40,
               left: parseInt((e.pageX - this.$el.offset().left) / this.$el.width() * 100) + '%',
               width: '6em',
               height: '3em',
               'background-color': 'lightgrey',
-              'border-bottom': '2px dashed black'
+              'border-bottom': '2px dotted black'
             }
           };
-          string.name = this.get('name');
+          string.name = cacheName;
           string.stringNumber = stringNumber;
           var stringsDiv = this.getRegion('string').$el;
           stringsDiv.append('<div id="' + stringId + '"></div>');
           var newString =  new StringView({ data: string });
           this.spray($('#' + stringId), newString);
           allGroups.strings.push(string);
-          app.store.set(viewAndRegion, allGroups);
+          app.store.set(cacheName, allGroups);
         } else {
           var groupNumber = $(e.currentTarget).parent().parent().parent().css('order'),
             currentGroup = allGroups.groups[groupNumber];
-          currentGroup.name = this.get('name');
+          currentGroup.name = cacheName;
           currentGroup.groupNumber = groupNumber;
           (new PopOver({
             data: {
@@ -69,19 +68,18 @@
       }
     },
     onReady: function() {
-      console.log('in onready, ', this.options.cacheName);
       var self = this,
-        viewAndRegion = this.options.cacheName,
-        allGroups = app.store.get(viewAndRegion),
+        cacheName = this.options.cacheName,
+        allGroups = app.store.get(cacheName),
         currentDirection = allGroups.direction,
         groupNumber = 0,
         stringNumber = 0;
       _.each(allGroups.groups, function(group) {
-        var id = viewAndRegion + '-' + groupNumber + '-id';
-        group.name = self.get('name');
+        group.name = cacheName;
+        var id = cacheName + '-' + groupNumber + '-id';
         group.groupNumber = groupNumber;
         var groupsDiv = self.getRegion('group').$el;
-        groupsDiv.append('<div id="'+id+'"></div>');
+        groupsDiv.append('<div id="' + id + '"></div>');
         var newGroup =  new Group({ data: group });
         self.spray($('#' + id), newGroup);
         if (currentDirection === 'v') {
@@ -100,8 +98,8 @@
         groupNumber = groupNumber + 1;
       });
       _.each(allGroups.strings, function(string) {
-        var stringId = viewAndRegion + '-' + stringNumber + '-string-id';
-        string.name = self.get('name');
+        var stringId = cacheName + '-' + stringNumber + '-string-id';
+        string.name = cacheName;
         string.stringNumber = stringNumber;
         var stringsDiv = self.getRegion('string').$el;
         stringsDiv.append('<div id="' + stringId + '"></div>');
@@ -111,7 +109,7 @@
       });
     },
     onClose: function() {
-      $('[id^='+this.get('name')+']').remove();
+      $('[id^=' + this.options.name + ']').remove();
     },
     extractTemplate: function() {
       var builderName = cacheName,
@@ -208,7 +206,7 @@
         uniqueId = viewAndRegion + '-' + this.get('stringNumber') ;
       if (this.get('less')) {
         var theme = $('head link[rel="stylesheet"]').attr('href').split('/')[1],
-          less = '#' + uniqueId + '-string-id {' + this.get('less')+ '}',
+          less = '#' + uniqueId + '-string-id {' + this.get('less') + '}',
           self = this;
         if (self.flag === undefined) {
           self.flag = true;
@@ -235,6 +233,9 @@
         $('#' + uniqueId + '-string-id').css(this.get('css_container'));
         if (typeof this.get('stringNumber') !== 'undefined' && this.get('template')) {
           this.$el.parent().css({'height': '', 'width': '', 'background-color': ''});
+          var allGroups = app.store.get(viewAndRegion);
+          allGroups.strings[this.get('stringNumber')].css_container = this.$el.parent().attr('style');
+          app.store.set(viewAndRegion, allGroups);
         }
       }
     }
@@ -286,7 +287,7 @@
             this.heightFlag = false;
           }
           var newNextHeightBottom = newBottomHeight + this.nextBasis;
-          nextBottom.css('flex', '0 1 '+ newNextHeightBottom +'%');
+          nextBottom.css('flex', '0 1 ' + newNextHeightBottom +'%');
         }
       } else if (event.hasClass('drag-top')) {
         if (this.heightFlag) {
@@ -296,13 +297,13 @@
         this.change = arguments[1].position.top - arguments[1].originalPosition.top;
         var newTopHeight = parseInt(this.change/this.initialHeight*this.initialBasis);
         var newHeight = this.initialBasis - newTopHeight;
-        this.$el.parent().css('flex', '0 1 '+ newHeight +'%');
+        this.$el.parent().css('flex', '0 1 ' + newHeight +'%');
         if (parseInt(groupNumber) === 0) {
           if (this.heightFlag) {
             this.heightFlag = false;
           }
-          $('#new').css('flex', '0 1 '+ newTopHeight +'%');
-          this.$el.parent().css('flex', '0 1 '+ newHeight +'%');
+          $('#new').css('flex', '0 1 ' + newTopHeight +'%');
+          this.$el.parent().css('flex', '0 1 ' + newHeight +'%');
         } else {
           var currentId = this.$el.parent().attr('id');
           var prev = $('#' + currentId).prev();
@@ -311,7 +312,7 @@
             this.heightFlag = false;
           }
           var prevHeight = newTopHeight + this.prevBasis;
-          prev.css('flex', '0 1 '+ prevHeight +'%');
+          prev.css('flex', '0 1 ' + prevHeight + '%');
         }
       } else if (event.hasClass('drag-left')) {
         if (this.widthFlag) {
@@ -321,12 +322,12 @@
         this.change = arguments[1].position.left - arguments[1].originalPosition.left;
         var newLeftWidth = parseInt(this.change/this.initialWidth*this.initialBasis);
         var newWidth = this.initialBasis - newLeftWidth;
-        this.$el.parent().css('flex', '0 1 '+ newWidth +'%');
+        this.$el.parent().css('flex', '0 1 ' + newWidth + '%');
         if (parseInt(groupNumber) === 0) {
           if (this.widthFlag) {
            this.widthFlag = false;
           }
-          $('#new').css('flex', '0 1 '+ newLeftWidth +'%');
+          $('#new').css('flex', '0 1 ' + newLeftWidth + '%');
         } else {
           var currentLeftId = this.$el.parent().attr('id');
           var prevLeft = $('#' + currentLeftId).prev();
@@ -335,7 +336,7 @@
            this.widthFlag = false;
           }
           var prevWidth = newLeftWidth + this.prevBasis;
-          prevLeft.css('flex', '0 1 '+ prevWidth +'%');
+          prevLeft.css('flex', '0 1 ' + prevWidth + '%');
         }
       } else if (event.hasClass('drag-right')) {
         if (this.widthFlag) {
@@ -345,12 +346,12 @@
         var newRightWidth = parseInt(this.change/this.initialWidth*this.initialBasis);
         this.change = arguments[1].originalPosition.left  - arguments[1].position.left;
         var rightWidth = this.initialBasis - newRightWidth;
-        this.$el.parent().css('flex', '0 1 '+ rightWidth +'%');
+        this.$el.parent().css('flex', '0 1 ' + rightWidth + '%');
         if (parseInt(groupNumber) === last) {
           if (this.widthFlag) {
             this.widthFlag = false;
           }
-           $('#new').css('flex', '0 1 '+ newRightWidth +'%');
+           $('#new').css('flex', '0 1 ' + newRightWidth + '%');
         } else {
           var currentIdRight = this.$el.parent().attr('id');
           var nextRight = $('#' + currentIdRight).next();
@@ -359,7 +360,7 @@
             this.widthFlag = false;
           }
           var newNextWidthRight = newRightWidth + this.nextBasis;
-          nextRight.css('flex', '0 1 '+ newNextWidthRight +'%');
+          nextRight.css('flex', '0 1 ' + newNextWidthRight + '%');
         }
       }
     },
@@ -545,7 +546,6 @@
       var theTemplateScript = this.get('template'),
         inputData = this.get('data'),
         //TODO: get the data here
-      //  jsonData = (inputData === '') ? '' : JSON.parse(inputData),
         preCompiledTemplateScript;
       if (Array.isArray(inputData)) {
         preCompiledTemplateScript = '{{#each .}}' + theTemplateScript + '{{/each}}';
@@ -664,7 +664,6 @@
           //HTML field is not empty
           var obj = this.get('obj'),
             viewAndRegion = obj.name,
-            direction = 'direction',
             editedObj = {
               template:      this.getViewIn('tabs').$el.find('[region="tab-html"] [editor="code"] textarea').val(),
               data:          this.getEditor('data').getVal(),
@@ -723,9 +722,9 @@
             basis = $('#' + groupId).css('flex-basis');
           if (parseInt(groupNumber) === 0) {
             if (cacheData.groups.length > 1) {
-              var next = viewAndRegion + '-' + (parseInt(groupNumber)+1) + '-id',
+              var next = viewAndRegion + '-' + (parseInt(groupNumber) + 1) + '-id',
                 nextBasis = parseInt($('#' + next).css('flex-basis')) + parseInt(basis);
-              deleteGroups[(parseInt(groupNumber)+1)].css_container = {
+              deleteGroups[(parseInt(groupNumber) + 1)].css_container = {
                 'flex-grow': '0',
                 'flex-shrink': '1',
                 'flex-basis': nextBasis + '%',

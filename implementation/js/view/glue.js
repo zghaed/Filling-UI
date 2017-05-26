@@ -60,9 +60,12 @@
         var self = this;
         _.each(keys, function(key) {
           var builder = app.get('Builder').create({
-            data: {
-              "name" : key
-             }
+            cacheName : key,
+            dataSource: app.view({
+              data: {
+                //... just for stack-group apply
+              }
+            }).create()
           });
           app.store.set(key, app.store.get(key) || {
             'groups': [
@@ -80,15 +83,7 @@
           var nameArray = key.split('-');
           nameArray.shift();
           var name = nameArray.join('-');
-          self.listenToOnce(builder, 'view:box-ready', function() {
-            _.each(builder.regions, function(selector, r) {
-              var box = builder.getViewIn(r);
-              _.defer(function() {
-                box.ui['toggle-preview'].click();
-              });
-            });
-          });
-          self.spray($('[region="'+name+'"]'), builder);
+          self.spray($('[region="' + name + '"]'), builder);
         });
       }
     }
