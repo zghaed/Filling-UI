@@ -22,9 +22,10 @@
     },
     actions: {
       'update-group': function($btn, e) {
-        var allGroups = app.store.get(this.get('name')),
-          viewAndRegion = this.get('name');
+        var allGroups = app.store.get(cacheName),
+          viewAndRegion = cacheName;
         if (e.shiftKey) {
+          console.log('height size is, ', this.$el.find('[region="string-container"]').height());
           var stringNumber = allGroups.strings.length;
           var stringId = viewAndRegion + '-' + stringNumber + '-string-id';
           var string = {
@@ -33,12 +34,12 @@
             less: '',
             css_container: {
               position: 'absolute',
-              top: parseInt((e.pageY - this.$el.offset().top) / this.$el.height() * 100) + '%',
+              top: parseInt((e.pageY - this.$el.offset().top - 35) / this.$el.height() * 100) + '%',
               left: parseInt((e.pageX - this.$el.offset().left) / this.$el.width() * 100) + '%',
               width: '6em',
               height: '3em',
               'background-color': 'lightgrey',
-              'border-bottom': '2px dotted black'
+              'border-bottom': '2px dashed black'
             }
           };
           string.name = this.get('name');
@@ -65,40 +66,13 @@
             }
           })).popover($(e.currentTarget), {placement: 'top', bond: this, style: {width: '600px'}});
         }
-      },
-      'change-direction': function() {
-        var groups = this.getRegion('group').$el,
-          currenctDirection = this.getEditor('direction').getVal();
-        if (currenctDirection==='v') {
-          this.$el.find('.drag-bottom').removeClass('hide');
-          this.$el.find('.drag-top').removeClass('hide');
-          this.$el.find('.drag-left').addClass('hide');
-          this.$el.find('.drag-right').addClass('hide');
-          groups.css({
-            'flex-direction': 'column',
-          });
-        } else {
-          this.$el.find('.drag-bottom').addClass('hide');
-          this.$el.find('.drag-top').addClass('hide');
-          this.$el.find('.drag-left').removeClass('hide');
-          this.$el.find('.drag-right').removeClass('hide');
-          groups.css({
-            'flex-direction': 'row',
-          });
-        }
-        var name = this.get('name').split('/'),
-          viewAndRegion = name[0],
-          allGroups = app.store.get(viewAndRegion),
-          direction = 'direction';
-        allGroups.direction = currenctDirection;
-        app.store.set(viewAndRegion, allGroups);
       }
     },
     onReady: function() {
-      console.log('here');
+      console.log('in onready, ', this.options.cacheName);
       var self = this,
-        allGroups = app.store.get(this.get('name')),
-        viewAndRegion = this.get('name'),
+        viewAndRegion = this.options.cacheName,
+        allGroups = app.store.get(viewAndRegion),
         currentDirection = allGroups.direction,
         groupNumber = 0,
         stringNumber = 0;
@@ -140,7 +114,7 @@
       $('[id^='+this.get('name')+']').remove();
     },
     extractTemplate: function() {
-      var builderName = this.get('name'),
+      var builderName = cacheName,
         groups = app.store.get(builderName),
         stacks = groups.groups,
         strings = groups.strings,
@@ -182,7 +156,7 @@
       return allTemplate.html();
     },
     extractLess: function() {
-      var builderName = this.get('name'),
+      var builderName = cacheName,
         groups = app.store.get(builderName),
         stacks = groups.groups,
         strings = groups.strings,
@@ -211,7 +185,9 @@
 
   var StringView = app.view('StringView', {
     template: [
+      '<div class="ui-draggable-item drag-string-left"></div>',
       '<div action-click="edit-string" region="string-container">{{{template}}}</div>',
+      '<div class="ui-draggable-item drag-string-right"></div>',
     ],
     actions: {
       'edit-string': function($btn, e) {
@@ -746,18 +722,18 @@
           var groupId = viewAndRegion + '-' + groupNumber + '-id',
             basis = $('#' + groupId).css('flex-basis');
           if (parseInt(groupNumber) === 0) {
-            var next = viewAndRegion + '-' + (parseInt(groupNumber)+1) + '-id',
-              nextBasis = parseInt($('#' + next).css('flex-basis')) + parseInt(basis);
-            console.log('next basis is, ', nextBasis);
-            deleteGroups[(parseInt(groupNumber)+1)].css_container = {
-              'flex-grow': '0',
-              'flex-shrink': '1',
-              'flex-basis': nextBasis + '%',
-            };
+            if (cacheData.groups.length > 1) {
+              var next = viewAndRegion + '-' + (parseInt(groupNumber)+1) + '-id',
+                nextBasis = parseInt($('#' + next).css('flex-basis')) + parseInt(basis);
+              deleteGroups[(parseInt(groupNumber)+1)].css_container = {
+                'flex-grow': '0',
+                'flex-shrink': '1',
+                'flex-basis': nextBasis + '%',
+              };
+            }
           } else {
             var prev = viewAndRegion + '-' + (parseInt(groupNumber)-1) + '-id',
               prevBasis = parseInt($('#' + prev).css('flex-basis')) + parseInt(basis);
-            console.log('prev basis is, ', prevBasis);
             deleteGroups[(parseInt(groupNumber)-1)].css_container = {
               'flex-grow': '0',
               'flex-shrink': '1',
@@ -772,8 +748,7 @@
             direction: cacheData.direction,
             name: viewAndRegion
           };
-          if (cacheData.groups.length > 1) {
-
+          if (cacheData.groups.length > 0) {
             app.store.set(viewAndRegion, cacheData);
             var cssId = viewAndRegion + '-' + groupNumber + '-css';
             $('#' + cssId).remove();

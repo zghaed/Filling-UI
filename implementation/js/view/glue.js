@@ -17,9 +17,12 @@
           allCaches = app.store.getAll();
         if (!(allCaches[cacheName] || regions)) {
           var builder = app.get('Builder').create({
-            data: {
-              "name" : cacheName
-             }
+            cacheName : cacheName,
+            dataSource: app.view({
+              data: {
+                //... just for stack-group apply
+              }
+            }).create()
           });
           app.store.set(cacheName, app.store.get(cacheName) || {
             'groups': [
