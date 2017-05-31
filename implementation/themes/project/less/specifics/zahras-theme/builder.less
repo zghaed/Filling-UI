@@ -6,8 +6,20 @@
   z-index: 10;
 }
 
-[region='string'] .regional-stringview,
-[region='string'] .regional-stringview .region-string-container {
+[region='hanger-groups'] {
+  position: absolute;
+  height: 100%;
+  width: 100%;
+  top: 0;
+  left: 0;
+}
+
+[region='hanger-groups'] > * {
+  z-index: 100;
+}
+
+[region='hanger-groups'] .regional-hangergroup,
+[region='hanger-groups'] .regional-hangergroup .region-hanger-container {
   height: 100%;
 }
 
@@ -18,18 +30,6 @@
 
 [region='group'] > * {
   position: relative;
-}
-
-[region='string'] {
-  position: absolute;
-  height: 100%;
-  width: 100%;
-  top: 0;
-  left: 0;
-}
-
-[region='string'] > * {
-  z-index: 100;
 }
 
 [region="view-lock"] {
@@ -92,7 +92,7 @@
   background-color: lightgrey;
 }
 
-.drag-string-right {
+.drag-hanger-right {
   position: absolute;
   cursor: move;
   border-bottom-left-radius: 90px;
@@ -108,7 +108,7 @@
   background-color: black;
 }
 
-.drag-string-left {
+.drag-hanger-left {
   position: absolute;
   cursor: move;
   border-bottom-left-radius: 90px;

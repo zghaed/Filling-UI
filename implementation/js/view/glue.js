@@ -34,7 +34,7 @@
                 }
               },
             ],
-            'strings': [],
+            'hangerGroups': [],
             'direction': ''
           });
           this.spray(target, builder);
@@ -49,8 +49,8 @@
         _.each(caches, function(val, key) {
           var keyArray = key.split('-');
           if (keyArray[0] === viewName) {
-            var  groups = caches[key].groups.length;
-            if(groups < 1) {
+            var  stackGroups = caches[key].groups.length;
+            if(stackGroups < 1) {
               app.store.set(key);
             } else {
               keys.push(key);
@@ -77,7 +77,7 @@
                 }
               },
             ],
-            'strings': [],
+            'hangerGroups': [],
             'direction': ''
           });
           var nameArray = key.split('-');

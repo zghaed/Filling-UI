@@ -1,7 +1,7 @@
 ;(function(app) {
   app.view('Builder', {
     template: [
-      '<div region="string"></div>',
+      '<div region="hanger-groups"></div>',
       '<div action="update-group" region="group"></div>',
     ],
     coop: ['update-data'],
@@ -15,7 +15,7 @@
           name:      options.name,
           direction: options.direction,
           groups:    options.newGroups,
-          strings:   options.newStrings
+          hangerGroups:   options.newHangerGroups
         });
       }
     },
@@ -24,9 +24,9 @@
         var cacheName = this.options.cacheName,
           allGroups = app.store.get(cacheName);
         if (e.shiftKey) {
-          var stringNumber = allGroups.strings.length,
-            stringId = cacheName + '-' + stringNumber + '-string-id';
-          var string = {
+          var hangerNumber = allGroups.hangerGroups.length,
+            hangerGroupId = cacheName + '-' + hangerNumber + '-hanger-id';
+          var hangerGroup = {
             template: '',
             data: '',
             less: '',
@@ -41,16 +41,16 @@
               'border-bottom': '2px dotted black'
             }
           };
-          string.name = cacheName;
-          string.stringNumber = stringNumber;
-          var stringsDiv = this.getRegion('string').$el;
-          stringsDiv.append('<div id="' + stringId + '"></div>');
-          var newString =  new StringView({
+          hangerGroup.name = cacheName;
+          hangerGroup.hangerNumber = hangerNumber;
+          var hangerGroupsDiv = this.getRegion('hanger-groups').$el;
+          hangerGroupsDiv.append('<div id="' + hangerGroupId + '"></div>');
+          var newHangerGroup =  new HangerGroup({
             dataSource: this,
-            data: string
+            data: hangerGroup
           });
-          this.spray(('#' + stringId), newString);
-          allGroups.strings.push(string);
+          this.spray(('#' + hangerGroupId), newHangerGroup);
+          allGroups.hangerGroups.push(hangerGroup);
           app.store.set(cacheName, allGroups);
         } else {
           var region = $(e.currentTarget),
@@ -78,7 +78,7 @@
         allGroups = app.store.get(cacheName),
         currentDirection = allGroups.direction,
         groupNumber = 0,
-        stringNumber = 0;
+        hangerNumber = 0;
       _.each(allGroups.groups, function(group) {
         group.name = cacheName;
         var id = cacheName + '-' + groupNumber + '-id';
@@ -109,18 +109,18 @@
         }
         groupNumber = groupNumber + 1;
       });
-      _.each(allGroups.strings, function(string) {
-        var stringId = cacheName + '-' + stringNumber + '-string-id';
-        string.name = cacheName;
-        string.stringNumber = stringNumber;
-        var stringsDiv = self.getRegion('string').$el;
-        stringsDiv.append('<div id="' + stringId + '"></div>');
-        var newString =  new StringView({
+      _.each(allGroups.hangerGroups, function(hangerGroup) {
+        var hangerGroupId = cacheName + '-' + hangerNumber + '-hanger-id';
+        hangerGroup.name = cacheName;
+        hangerGroup.hangerNumber = hangerNumber;
+        var hangerGroupsDiv = self.getRegion('hanger-groups').$el;
+        hangerGroupsDiv.append('<div id="' + hangerGroupId + '"></div>');
+        var newHangerGroup =  new HangerGroup({
           dataSource: self,
-          data: string
+          data: hangerGroup
         });
-        self.spray(('#' + stringId), newString);
-        stringNumber = stringNumber + 1;
+        self.spray(('#' + hangerGroupId), newHangerGroup);
+        hangerNumber = hangerNumber + 1;
       });
     },
     onClose: function() {
@@ -130,8 +130,8 @@
       var builderName = this.options.cacheName,
         groups = app.store.get(builderName),
         stacks = groups.groups,
-        strings = groups.strings,
-        stringNumber = 0,
+        hangerGroups = groups.hangerGroups,
+        hangerNumber = 0,
         stackNumber = 0,
         allTemplate = $('<div></div>'),
         direction = '';
@@ -140,7 +140,7 @@
       } else if (groups.direction == 'v') {
         direction = 'flex-direction: column;';
       }
-      allTemplate.append('<div region="string"></div>');
+      allTemplate.append('<div region="hanger-groups"></div>');
       allTemplate.append('<div region="group" style="' + direction + '"></div>');
       _.each(stacks, function(stack) {
         if (stack.template) {
@@ -154,17 +154,17 @@
         }
         stackNumber += 1;
       });
-      _.each(strings, function(string) {
-        if (string.template) {
-          var stringId = builderName + '-' + stringNumber + '-string-id',
-            style = $('#' + stringId).attr('style'),
-            stringDiv = '<div id ="' + stringId + '" style="' + style + '">' + string.template + '</div>';
-          if (string.data) {
-            stringDiv = '{{#' + string.data + '}}' + $(stringDiv).get(0).outerHTML + '{{/' + string.data + '}}';
+      _.each(hangerGroups, function(hangerGroup) {
+        if (hangerGroup.template) {
+          var hangerGroupId = builderName + '-' + hangerNumber + '-hanger-id',
+            style = $('#' + hangerGroupId).attr('style'),
+            hangerGroupDiv = '<div id ="' + hangerGroupId + '" style="' + style + '">' + hangerGroup.template + '</div>';
+          if (hangerGroup.data) {
+            hangerGroupDiv = '{{#' + hangerGroup.data + '}}' + $(hangerGroupDiv).get(0).outerHTML + '{{/' + hangerGroup.data + '}}';
           }
-          allTemplate.find('[region="string"]').append(stringDiv);
+          allTemplate.find('[region="hanger-groups"]').append(hangerGroupDiv);
         }
-        stringNumber += 1;
+        hangerNumber += 1;
       });
       return allTemplate.html();
     },
@@ -172,8 +172,8 @@
       var builderName = this.options.cacheName,
         groups = app.store.get(builderName),
         stacks = groups.groups,
-        strings = groups.strings,
-        stringNumber = 0,
+        hangerGroups = groups.hangerGroups,
+        hangerNumber = 0,
         stackNumber = 0,
         allLess = '';
       _.each(stacks, function(stack) {
@@ -184,23 +184,23 @@
         }
         stackNumber += 1;
       });
-      _.each(strings, function(string) {
-        if (string.less) {
-          var cssId = builderName + '-' + stringNumber + '-string-css',
-            currentLess = '#' + cssId + '{' + string.less + '}';
+      _.each(hangerGroups, function(hangerGroup) {
+        if (hangerGroup.less) {
+          var cssId = builderName + '-' + hangerNumber + '-hanger-css',
+            currentLess = '#' + cssId + '{' + hangerGroup.less + '}';
           allLess += currentLess;
         }
-        stringNumber += 1;
+        hangerNumber += 1;
       });
       return allLess;
     }
   });
 
-  var StringView = app.view('StringView', {
+  var HangerGroup = app.view('HangerGroup', {
     template: [
-      '<div class="ui-draggable-item drag-string-left"></div>',
-      '<div action-click="update-string" region="string-container">{{{template}}}</div>',
-      '<div class="ui-draggable-item drag-string-right"></div>',
+      '<div class="ui-draggable-item drag-hanger-left"></div>',
+      '<div action-click="update-hanger" region="hanger-container"></div>',
+      '<div class="ui-draggable-item drag-hanger-right"></div>',
     ],
     dnd: {
       drag: {
@@ -208,11 +208,11 @@
       }
     },
     actions: {
-      'update-string': function($btn, e) {
+      'update-hanger': function($btn, e) {
         (new PopOver({
           dataSource: this,
           data: {
-            type: 'string',
+            type: 'hanger',
             html: this.get('template'),
             data: this.get('data'),
             css_container: this.get('css_container'),
@@ -237,28 +237,28 @@
     onDragStop: function(event, ui) {
       var viewAndRegion = this.get('name'),
         allGroups = app.store.get(viewAndRegion),
-        newString = this.get();
-      newString.css_container.top = this.$el.parent().css('top');
-      newString.css_container.left = this.$el.parent().css('left');
-      allGroups.strings[this.get('stringNumber')].css_container.top = this.$el.parent().css('top');
-      allGroups.strings[this.get('stringNumber')].css_container.left = this.$el.parent().css('left');
-      this.set(newString);
+        newHangerGroup = this.get();
+      newHangerGroup.css_container.top = this.$el.parent().css('top');
+      newHangerGroup.css_container.left = this.$el.parent().css('left');
+      allGroups.hangerGroups[this.get('hangerNumber')].css_container.top = this.$el.parent().css('top');
+      allGroups.hangerGroups[this.get('hangerNumber')].css_container.left = this.$el.parent().css('left');
+      this.set(newHangerGroup);
       app.store.set(viewAndRegion, allGroups);
     },
     onReady: function() {
       var viewAndRegion = this.get('name'),
-        uniqueId = viewAndRegion + '-' + this.get('stringNumber') + '-string',
+        uniqueId = viewAndRegion + '-' + this.get('hangerNumber') + '-hanger',
         appliedContent = applyGroupContent(this.get('template'), this.options.dataSource.options.dataSource.get(this.get('data')));
-      this.$el.find('[region="string-container"]').html(appliedContent);
-      compileLess(uniqueId, this, 'string-container');
+      this.$el.find('[region="hanger-container"]').html(appliedContent);
+      compileLess(uniqueId, this, 'hanger-container');
       if (this.get('css_container')) {
         $('#' + uniqueId + '-id').css(this.get('css_container'));
         if (this.get('template')) {
           this.$el.parent().css({'height': '', 'width': '', 'background-color': ''});
           var allGroups = app.store.get(viewAndRegion);
-          delete allGroups.strings[this.get('stringNumber')].css_container.height;
-          delete allGroups.strings[this.get('stringNumber')].css_container.width;
-          delete allGroups.strings[this.get('stringNumber')].css_container['background-color'];
+          delete allGroups.hangerGroups[this.get('hangerNumber')].css_container.height;
+          delete allGroups.hangerGroups[this.get('hangerNumber')].css_container.width;
+          delete allGroups.hangerGroups[this.get('hangerNumber')].css_container['background-color'];
           app.store.set(viewAndRegion, allGroups);
         }
       }
@@ -524,7 +524,7 @@
         css_container: {
           'flex-grow': '0',
           'flex-shrink': '1',
-          //'flex-basis': $('#new').css('flex-basis'),
+          'flex-basis': $('#new').css('flex-basis'),
         }
       };
       var editedData = {
@@ -637,10 +637,10 @@
         });
         this.parentCt.spray(('#' + newId), newGroup);
       } else if (position === 'start') {
-        //coop for adding to the beginnng
+        //coop for adding to the beginning
         var options = {
           newGroups: addGroup,
-          newStrings: allGroups.strings,
+          newHangerGroups: allGroups.hangerGroups,
           direction: allGroups.direction,
           name: this.get('name')
         };
@@ -761,25 +761,25 @@
 
             //Reload the Stack group with the new data
             this.options.dataSource.set(editedObj);
-          } else if (this.get('type') === 'string') {
-            var editRegionStrings = allGroups.strings,
-                stringNumber = obj.stringNumber;
-            baseId = viewAndRegion + '-' + stringNumber + '-string';
+          } else if (this.get('type') === 'hanger') {
+            var editRegionHangerGroups = allGroups.hangerGroups,
+                hangerNumber = obj.hangerNumber;
+            baseId = viewAndRegion + '-' + hangerNumber + '-hanger';
             uniqueId = baseId + '-id';
-            editRegionStrings[stringNumber] = editedObj;
-            allGroups.strings = editRegionStrings;
+            editRegionHangerGroups[hangerNumber] = editedObj;
+            allGroups.hangerGroups = editRegionHangerGroups;
 
             //Update css_container in the cache
             if (editedObj.css_container) {
               if (editedObj.template) {
                 currentBuilder.$el.find('#' + uniqueId).css({'height': '', 'width': '', 'background-color': ''});
-                delete allGroups.strings[stringNumber].css_container.height;
-                delete allGroups.strings[stringNumber].css_container.width;
-                delete allGroups.strings[stringNumber].css_container['background-color'];
+                delete allGroups.hangerGroups[hangerNumber].css_container.height;
+                delete allGroups.hangerGroups[hangerNumber].css_container.width;
+                delete allGroups.hangerGroups[hangerNumber].css_container['background-color'];
               }
             }
             editedObj.name = viewAndRegion;
-            editedObj.stringNumber = stringNumber;
+            editedObj.hangerNumber = hangerNumber;
 
             //Close the popover
             this.close();
@@ -803,10 +803,10 @@
         var obj = this.get('obj'),
           viewAndRegion = obj.name,
           groupNumber = obj.groupNumber,
-          stringNumber = obj.stringNumber,
+          hangerNumber = obj.hangerNumber,
           cacheData = app.store.get(viewAndRegion),
           deleteGroups = cacheData.groups,
-          deleteStrings = cacheData.strings;
+          deleteHangerGroups = cacheData.hangerGroups;
         if (this.get('type')==='group') {
           var groupId = viewAndRegion + '-' + groupNumber + '-id',
             basis = $('#' + groupId).css('flex-basis');
@@ -833,7 +833,7 @@
           cacheData.groups = deleteGroups;
           var options = {
             newGroups: cacheData.groups,
-            newStrings: cacheData.strings,
+            newHangerGroups: cacheData.hangerGroups,
             direction: cacheData.direction,
             name: viewAndRegion
           };
@@ -847,24 +847,24 @@
             this.close();
           }
         } else {
-          deleteStrings.splice(stringNumber, 1);
-          cacheData.strings = deleteStrings;
-          var stringOptions = {
+          deleteHangerGroups.splice(hangerNumber, 1);
+          cacheData.hangerGroups = deleteHangerGroups;
+          var hangerOptions = {
             newGroups: cacheData.groups,
-            newStrings: cacheData.strings,
+            newHangerGroups: cacheData.hangerGroups,
             direction: cacheData.direction,
             name: viewAndRegion
           };
           app.store.set(viewAndRegion, cacheData);
-          var stringCssId = viewAndRegion + '-' + stringNumber + '-string-css',
-            stringId = viewAndRegion + '-' + stringNumber + '-string-id';
+          var hangerGroupCssId = viewAndRegion + '-' + hangerNumber + '-hanger-css',
+            hangerGroupId = viewAndRegion + '-' + hangerNumber + '-hanger-id';
 
           //Close the popover
           this.close();
 
-          //Remove the string from the screen
-          $('#' + stringCssId).remove();
-          $('#' + stringId).remove();
+          //Remove the Hanger group from the screen
+          $('#' + hangerGroupCssId).remove();
+          $('#' + hangerGroupId).remove();
         }
       }
     },
