@@ -5,17 +5,17 @@
       '<div action="update-group" region="group"></div>',
     ],
     coop: ['update-data'],
-    onUpdateData: function(options) {
-      var cacheName = this.options.cacheName,
+    onUpdateData: function(option) {
+      var cacheName = option.name,
         nameArray = cacheName.split('-');
       nameArray.shift();
       var region = nameArray.join('-');
       if(region === this.$el.parent().attr('region')) {
         this.set({
-          name:      options.name,
-          direction: options.direction,
-          groups:    options.newGroups,
-          strings:   options.newStrings
+          name:      option.name,
+          direction: option.direction,
+          groups:    option.newGroups,
+          strings:   option.newStrings
         });
       }
     },
@@ -46,6 +46,7 @@
           var stringsDiv = this.getRegion('string').$el;
           stringsDiv.append('<div id="' + stringId + '"></div>');
           var newString =  new StringView({
+            dataSource: this,
             data: string
           });
           this.spray(('#' + stringId), newString);
@@ -84,6 +85,7 @@
         var groupsDiv = self.getRegion('group').$el;
         groupsDiv.append('<div id="' + id + '"></div>');
         var newGroup =  new Group({
+          dataSource: self,
           data: group
         });
         self.spray(('#' + id), newGroup);
@@ -113,6 +115,7 @@
         var stringsDiv = self.getRegion('string').$el;
         stringsDiv.append('<div id="' + stringId + '"></div>');
         var newString =  new StringView({
+          dataSource: self,
           data: string
         });
         self.spray(('#' + stringId), newString);
@@ -244,7 +247,7 @@
     onReady: function() {
       var viewAndRegion = this.get('name'),
         uniqueId = viewAndRegion + '-' + this.get('stringNumber') + '-string',
-        appliedContent = applyGroupContent(this.get('template'), this.parentCt.options.dataSource.get(this.get('data')));
+        appliedContent = applyGroupContent(this.get('template'), this.options.dataSource.options.dataSource.get(this.get('data')));
       this.$el.find('[region="string-container"]').html(appliedContent);
       compileLess(uniqueId, this, 'string-container');
       if (this.get('css_container')) {
@@ -342,9 +345,10 @@
             });
             app.store.set(viewAndRegion, allGroups);
           }
+          var newId = viewAndRegion + '-' + (parseInt(groupNumber)+1) + '-id';
           this.$el.find('.drag-left').hide();
           this.$el.find('.drag-right').hide();
-          $('<div id="new"></div>').insertAfter('#' + id);
+          $('<div id="' + newId + '"></div>').insertAfter('#' + id);
         }
       } else if (event.hasClass('drag-left')) {
         if (parseInt(groupNumber) === 0) {
@@ -393,10 +397,11 @@
         var bottomHeight = this.initialBasis - newBottomHeight;
         this.$el.parent().css('flex', '0 1 '+ bottomHeight +'%');
         if (parseInt(groupNumber) === last) {
+          var newId = viewAndRegion + '-' + (parseInt(groupNumber)+1) + '-id';
           if (this.heightFlag) {
             this.heightFlag = false;
           }
-          $('#new').css('flex', '0 1 '+ newBottomHeight +'%');
+          $('#' + newId).css('flex', '0 1 '+ newBottomHeight +'%');
         } else {
           var currentIdBottom = this.$el.parent().attr('id');
           var nextBottom = $('#' + currentIdBottom).next();
@@ -513,7 +518,7 @@
         css_container: {
           'flex-grow': '0',
           'flex-shrink': '1',
-          'flex-basis': $('#new').css('flex-basis'),
+          //'flex-basis': $('#new').css('flex-basis'),
         }
       };
       var editedData = {
@@ -528,9 +533,34 @@
       };
       if (event.hasClass('drag-bottom')) {
         if (parseInt(groupNumber) === last) {
+          //Dragging from bottom and adding a new stack group to the end
+          var newId = this.get('name') + '-' + (parseInt(this.get('groupNumber'))+1) + '-id';
           addGroup = addGroup.slice(0, -1);
           addGroup.push(editedData);
+          newData.css_container['flex-basis'] = $('#' + newId).css('flex-basis');
           addGroup.push(newData);
+
+          editedData.groupNumber = this.get('groupNumber');
+          editedData.name = this.get('name');
+          newData.groupNumber = parseInt(this.get('groupNumber')) + 1;
+          newData.name = this.get('name');
+
+
+          //Update the current Stack group with the updated height
+          this.set(editedData);
+
+          //Spray the new Stack group
+          var newGroup =  new Group({
+            dataSource: this.options.dataSource,
+            data: newData
+          });
+          this.parentCt.spray(('#' + newId), newGroup);
+
+          //Remove the left and right handles
+          this.$el.find('.drag-left').hide();
+          this.$el.find('.drag-right').hide();
+          this.parentCt.$el.find('#' + newId + ' .drag-left').hide();
+          this.parentCt.$el.find('#' + newId + ' .drag-right').hide();
         } else {
           position = 'next';
         }
@@ -595,15 +625,16 @@
 
       var cssId = viewAndRegion + '-' + groupNumber + '-css';
       $('#' + cssId).remove();
-      app.coop('update-data', options);
+      //app.coop('update-data', options);
 
       //Update cache
       app.store.set(viewAndRegion, allGroups);
     },
     onReady: function() {
+      console.log('in group onready, ', this.options.dataSource);
       var template = this.get('template'),
         data = this.get('data'),
-        appliedContent = applyGroupContent(template, this.parentCt.options.dataSource.get(data));
+        appliedContent = applyGroupContent(template, this.options.dataSource.options.dataSource.get(data));
       this.$el.find('[region="view-lock"]').html(appliedContent);
       this.$el.css({
         'order': this.get('groupNumber'),
@@ -681,7 +712,7 @@
             },
             baseId, uniqueId;
           var allGroups = app.store.get(viewAndRegion),
-           currentBuilder = this.options.dataSource.parentCt;
+           currentBuilder = this.options.dataSource.options.dataSource;
 
           if (this.get('type')==='group') {
             var editRegionGroups = allGroups.groups,
