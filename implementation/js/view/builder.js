@@ -5,17 +5,17 @@
       '<div action="update-group" region="group"></div>',
     ],
     coop: ['update-data'],
-    onUpdateData: function(option) {
-      var cacheName = option.name,
+    onUpdateData: function(options) {
+      var cacheName = options.name,
         nameArray = cacheName.split('-');
       nameArray.shift();
       var region = nameArray.join('-');
       if(region === this.$el.parent().attr('region')) {
         this.set({
-          name:      option.name,
-          direction: option.direction,
-          groups:    option.newGroups,
-          strings:   option.newStrings
+          name:      options.name,
+          direction: options.direction,
+          groups:    options.newGroups,
+          strings:   options.newStrings
         });
       }
     },
@@ -53,12 +53,13 @@
           allGroups.strings.push(string);
           app.store.set(cacheName, allGroups);
         } else {
-          var groupNumber = $(e.currentTarget).parent().css('order'),
+          var region = $(e.currentTarget),
+            groupNumber = region.parent().css('order'),
             currentGroup = allGroups.groups[groupNumber];
           currentGroup.name = cacheName;
           currentGroup.groupNumber = groupNumber;
           (new PopOver({
-            dataSource: $(e.currentTarget).parent().data('view'),
+            dataSource: region.parent().data('view'),
             data: {
               type: 'group',
               html: currentGroup.template,
@@ -67,7 +68,7 @@
               less: currentGroup.less,
               obj:  currentGroup
             }
-          })).popover($(e.currentTarget), {placement: 'top', bond: $(e.currentTarget), style: {width: '600px'}});
+          })).popover(region, {placement: 'top', bond: region, style: {width: '600px'}});
         }
       }
     },
@@ -315,7 +316,8 @@
     widthFlag: true,
     onDragStart: function(event, ui) {
       var id = this.$el.parent().attr('id'),
-        arrayId = id.split('-');
+        arrayId = id.split('-'),
+        newId;
       arrayId.pop();
       var viewAndRegion = this.get('name'),
         allGroups = app.store.get(viewAndRegion),
@@ -345,7 +347,7 @@
             });
             app.store.set(viewAndRegion, allGroups);
           }
-          var newId = viewAndRegion + '-' + (parseInt(groupNumber)+1) + '-id';
+          newId = viewAndRegion + '-' + (parseInt(groupNumber)+1) + '-id';
           this.$el.find('.drag-left').hide();
           this.$el.find('.drag-right').hide();
           $('<div id="' + newId + '"></div>').insertAfter('#' + id);
@@ -372,15 +374,17 @@
             });
             app.store.set(viewAndRegion, allGroups);
           }
+          newId = viewAndRegion + '-' + (parseInt(groupNumber)+1) + '-id';
           this.$el.find('.drag-top').hide();
           this.$el.find('.drag-bottom').hide();
-          $('<div id="new"></div>').insertAfter('#' + id);
+          $('<div id="' + newId + '"></div>').insertAfter('#' + id);
         }
       }
     },
     onDrag: function(event, ui) {
-      var id = this.$el.parent().attr('id');
-      var arrayId = id.split('-');
+      var id = this.$el.parent().attr('id'),
+        arrayId = id.split('-'),
+        newId;
       arrayId.pop();
       var viewAndRegion = this.get('name'),
         allGroups = app.store.get(viewAndRegion),
@@ -397,7 +401,7 @@
         var bottomHeight = this.initialBasis - newBottomHeight;
         this.$el.parent().css('flex', '0 1 '+ bottomHeight +'%');
         if (parseInt(groupNumber) === last) {
-          var newId = viewAndRegion + '-' + (parseInt(groupNumber)+1) + '-id';
+          newId = viewAndRegion + '-' + (parseInt(groupNumber) + 1) + '-id';
           if (this.heightFlag) {
             this.heightFlag = false;
           }
@@ -471,13 +475,14 @@
         var rightWidth = this.initialBasis - newRightWidth;
         this.$el.parent().css('flex', '0 1 ' + rightWidth + '%');
         if (parseInt(groupNumber) === last) {
+          newId = viewAndRegion + '-' + (parseInt(groupNumber) + 1) + '-id';
           if (this.widthFlag) {
             this.widthFlag = false;
           }
-           $('#new').css('flex', '0 1 ' + newRightWidth + '%');
+           $('#' + newId).css('flex', '0 1 ' + newRightWidth + '%');
         } else {
-          var currentIdRight = this.$el.parent().attr('id');
-          var nextRight = $('#' + currentIdRight).next();
+          var currentRightId = this.$el.parent().attr('id');
+          var nextRight = $('#' + currentRightId).next();
           if (this.widthFlag) {
             this.nextBasis = parseInt(nextRight.css('flex-basis'));
             this.widthFlag = false;
@@ -504,7 +509,8 @@
       this.nextBasis = parseInt(next.css('flex-basis'));
       var id = this.$el.parent().attr('id'),
         arrayId = id.split('-'),
-        position = 'middle';
+        position = 'middle',
+        newId;
       arrayId.pop();
       var viewAndRegion = this.get('name'),
         allGroups = app.store.get(viewAndRegion),
@@ -533,49 +539,21 @@
       };
       if (event.hasClass('drag-bottom')) {
         if (parseInt(groupNumber) === last) {
-          //Dragging from bottom and adding a new stack group to the end
-          var newId = this.get('name') + '-' + (parseInt(this.get('groupNumber'))+1) + '-id';
-          addGroup = addGroup.slice(0, -1);
-          addGroup.push(editedData);
-          newData.css_container['flex-basis'] = $('#' + newId).css('flex-basis');
-          addGroup.push(newData);
-
-          editedData.groupNumber = this.get('groupNumber');
-          editedData.name = this.get('name');
-          newData.groupNumber = parseInt(this.get('groupNumber')) + 1;
-          newData.name = this.get('name');
-
-
-          //Update the current Stack group with the updated height
-          this.set(editedData);
-
-          //Spray the new Stack group
-          var newGroup =  new Group({
-            dataSource: this.options.dataSource,
-            data: newData
-          });
-          this.parentCt.spray(('#' + newId), newGroup);
-
-          //Remove the left and right handles
-          this.$el.find('.drag-left').hide();
-          this.$el.find('.drag-right').hide();
-          this.parentCt.$el.find('#' + newId + ' .drag-left').hide();
-          this.parentCt.$el.find('#' + newId + ' .drag-right').hide();
+          position = 'end';
         } else {
           position = 'next';
         }
       }
       if (event.hasClass('drag-right')) {
         if (parseInt(groupNumber) === last) {
-          addGroup = addGroup.slice(0, -1);
-          addGroup.push(editedData);
-          addGroup.push(newData);
+          position = 'end';
         } else {
           position = 'next';
         }
       }
       if (event.hasClass('drag-top')) {
         if (parseInt(groupNumber) === 0) {
+          position = 'start';
           addGroup.shift();
           addGroup.unshift(editedData);
           addGroup.unshift(newData);
@@ -585,6 +563,7 @@
       }
       if (event.hasClass('drag-left')) {
         if (parseInt(groupNumber) === 0) {
+          position = 'start';
           addGroup.shift();
           addGroup.unshift(editedData);
           addGroup.unshift(newData);
@@ -593,62 +572,114 @@
         }
       }
       if (position === 'prev') {
+        //Update the current Stack group
         addGroup[parseInt(groupNumber)].css_container = {
           'flex-grow': '0',
           'flex-shrink': '1',
           'flex-basis': this.$el.parent().css('flex-basis'),
         };
+        editedData.groupNumber = this.get('groupNumber');
+        editedData.name = this.get('name');
+        this.set(editedData);
+
+        //Update the previous Stack group
         addGroup[parseInt(groupNumber) - 1].css_container = {
           'flex-grow': '0',
           'flex-shrink': '1',
           'flex-basis': this.prevBasis + '%',
         };
+        var prevId = this.get('name') + '-' + (parseInt(this.get('groupNumber')) - 1) + '-id';
+        var prevObj = addGroup[parseInt(groupNumber) - 1];
+        prevObj.groupNumber = parseInt(this.get('groupNumber')) - 1;
+        prevObj.name = this.get('name');
+        this.parentCt.$el.find('#' + prevId + ' .regional-group').data('view').set(prevObj);
       } else if (position === 'next') {
+        //Update the current Stack group
         addGroup[parseInt(groupNumber)].css_container = {
           'flex-grow': '0',
           'flex-shrink': '1',
           'flex-basis': this.$el.parent().css('flex-basis'),
         };
+        editedData.groupNumber = this.get('groupNumber');
+        editedData.name = this.get('name');
+        this.set(editedData);
+
+        //Update the next Stack group
         addGroup[parseInt(groupNumber) + 1].css_container = {
           'flex-grow': '0',
           'flex-shrink': '1',
           'flex-basis': this.nextBasis + '%',
         };
+        var nextId = this.get('name') + '-' + (parseInt(this.get('groupNumber')) + 1) + '-id';
+        var nextObj = addGroup[parseInt(groupNumber) + 1];
+        nextObj.groupNumber = parseInt(this.get('groupNumber')) + 1;
+        nextObj.name = this.get('name');
+        this.parentCt.$el.find('#' + nextId + ' .regional-group').data('view').set(nextObj);
+      } else if (position === 'end') {
+        newId = this.get('name') + '-' + (parseInt(this.get('groupNumber')) + 1) + '-id';
+        //Dragging from end and adding a new stack group to the end
+        addGroup = addGroup.slice(0, -1);
+        addGroup.push(editedData);
+        newData.css_container['flex-basis'] = $('#' + newId).css('flex-basis');
+        addGroup.push(newData);
+        editedData.groupNumber = this.get('groupNumber');
+        editedData.name = this.get('name');
+        newData.groupNumber = parseInt(this.get('groupNumber')) + 1;
+        newData.name = this.get('name');
+
+        //Update the current Stack group with the updated height
+        this.set(editedData);
+
+        //Spray the new Stack group
+        var newGroup =  new Group({
+          dataSource: this.options.dataSource,
+          data: newData
+        });
+        this.parentCt.spray(('#' + newId), newGroup);
+      } else if (position === 'start') {
+        //coop for adding to the beginnng
+        var options = {
+          newGroups: addGroup,
+          newStrings: allGroups.strings,
+          direction: allGroups.direction,
+          name: this.get('name')
+        };
+        app.coop('update-data', options);
       }
       allGroups.groups = addGroup;
-      var options = {
-        newGroups: allGroups.groups,
-        newStrings: allGroups.strings,
-        direction: allGroups.direction,
-        name: this.get('name')
-      };
 
-      var cssId = viewAndRegion + '-' + groupNumber + '-css';
-      $('#' + cssId).remove();
-      //app.coop('update-data', options);
-
-      //Update cache
+      //Update the cache
       app.store.set(viewAndRegion, allGroups);
     },
     onReady: function() {
-      console.log('in group onready, ', this.options.dataSource);
-      var template = this.get('template'),
-        data = this.get('data'),
-        appliedContent = applyGroupContent(template, this.options.dataSource.options.dataSource.get(data));
+      var viewAndRegion = this.get('name'),
+        allGroups = app.store.get(viewAndRegion),
+        uniqueId = viewAndRegion + '-' + this.get('groupNumber'),
+        template = this.get('template'),
+        data = this.get('data');
+
+      //Display the content
+      var appliedContent = applyGroupContent(template, this.options.dataSource.options.dataSource.get(data));
       this.$el.find('[region="view-lock"]').html(appliedContent);
       this.$el.css({
         'order': this.get('groupNumber'),
       });
-      this.$el.find('.drag-top').css('left', '50%', 'important');
-      this.$el.find('.drag-bottom').css('left', '50%', 'important');
-      this.$el.find('.drag-left').css('top', '50%', 'important');
-      this.$el.find('.drag-right').css('top', '50%', 'important');
 
-      var viewAndRegion = this.get('name'),
-        uniqueId = viewAndRegion + '-' + this.get('groupNumber');
-      compileLess(uniqueId, this, 'view-lock');
+      //Locate the flex item
       if (this.get('css_container')) {
         $('#' + uniqueId + '-id').css(this.get('css_container'));
+      }
+
+      //Apply less
+      compileLess(uniqueId, this, 'view-lock');
+
+      //Remove extra handles
+      if (allGroups.direction === 'v') {
+        this.$el.find('.drag-left').hide();
+        this.$el.find('.drag-right').hide();
+      } else if (allGroups.direction === 'h') {
+        this.$el.find('.drag-top').hide();
+        this.$el.find('.drag-bottom').hide();
       }
     }
   });
@@ -728,7 +759,7 @@
             //Close the popover
             this.close();
 
-            //Reload the Group view with the new data
+            //Reload the Stack group with the new data
             this.options.dataSource.set(editedObj);
           } else if (this.get('type') === 'string') {
             var editRegionStrings = allGroups.strings,
@@ -753,7 +784,7 @@
             //Close the popover
             this.close();
 
-            //Update the String view with the new data
+            //Update the Hanger group with the new data
             this.options.dataSource.set(editedObj);
           }
           //Update cache
