@@ -18,11 +18,11 @@
         if (!(allCaches[cacheName] || regions)) {
           var builder = app.get('Builder').create({
             cacheName : cacheName,
-            dataSource: app.view({
-              data: {
-                //... just for stack-group apply
-              }
-            }).create()
+            dataSource: app.model({
+              first: {"a": "Hi", "b": "Bye"},
+              second: {"a": "Hi2", "b": "Bye2"},
+              third: {"a": "Hi3", "b": "Bye3"}
+            })
           });
           app.store.set(cacheName, app.store.get(cacheName) || {
             'groups': [
@@ -61,11 +61,11 @@
         _.each(keys, function(key) {
           var builder = app.get('Builder').create({
             cacheName : key,
-            dataSource: app.view({
-              data: {
-                //... just for stack-group apply
-              }
-            }).create()
+            dataSource: app.model({
+              first: {"a": "Hi", "b": "Bye"},
+              second: {"a": "Hi2", "b": "Bye2"},
+              third: {"a": "Hi3", "b": "Bye3"}
+            })
           });
           app.store.set(key, app.store.get(key) || {
             'groups': [
