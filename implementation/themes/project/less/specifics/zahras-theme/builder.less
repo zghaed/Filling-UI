@@ -1,10 +1,14 @@
 .regional-builder {
-  [region='group'] {
+  [region='stack-groups'] {
     position: absolute;
     height: 100%;
     width: 100%;
     display: flex;
     z-index: 10;
+  }
+
+  [region='stack-groups'] > * {
+    position: relative;
   }
 
   [region='hanger-groups'] {
@@ -29,15 +33,11 @@
     width: 100%;
   }
 
-  [region='group'] > * {
-    position: relative;
-  }
-
   [region="view-lock"] {
     position: absolute;
   }
 
-  .region-group .regional-group {
+  .region-stack-groups .regional-stackgroup {
     height: 100%;
     position: relative;
     .border

@@ -25,7 +25,7 @@
             })
           });
           app.store.set(cacheName, app.store.get(cacheName) || {
-            'groups': [
+            'stackGroups': [
               {'template': '',
                 'data':'', 'less':'', 'css_container': {
                 'flex-grow': '0',
@@ -49,7 +49,7 @@
         _.each(caches, function(val, key) {
           var keyArray = key.split('-');
           if (keyArray[0] === viewName) {
-            var  stackGroups = caches[key].groups.length;
+            var  stackGroups = caches[key].stackGroups.length;
             if(stackGroups < 1) {
               app.store.set(key);
             } else {
@@ -68,7 +68,7 @@
             })
           });
           app.store.set(key, app.store.get(key) || {
-            'groups': [
+            'stackGroups': [
               {'template': '',
                 'data':'', 'less':'', 'css_container': {
                 'flex-grow': '0',
